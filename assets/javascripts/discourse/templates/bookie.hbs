@@ -1,0 +1,545 @@
+<div class="bookie-page">
+
+  {{! ── Header ── }}
+  <div class="bookie-header">
+    <div class="bookie-header-title">
+      <span class="bookie-header-trophy">🏆</span>
+      <h1>Bookie</h1>
+      <span class="bookie-subtitle">For Gooners, not gamblers · no real money</span>
+    </div>
+    <div class="bookie-balance-badge">
+      <span class="bookie-balance-label">Your balance</span>
+      <span class="bookie-balance-amount">{{this.balance}} {{this.currency}}</span>
+    </div>
+  </div>
+
+  {{! ── Tabs ── }}
+  <div class="bookie-tabs">
+    <button class="bookie-tab {{if (eq this.activeTab 'matches') 'active'}}"
+            {{on "click" (fn this.setTab "matches")}}>Open matches</button>
+    <button class="bookie-tab {{if (eq this.activeTab 'results') 'active'}}"
+            {{on "click" (fn this.setTab "results")}}>Results</button>
+    <button class="bookie-tab {{if (eq this.activeTab 'wallet') 'active'}}"
+            {{on "click" (fn this.setTab "wallet")}}>My wallet</button>
+    <button class="bookie-tab {{if (eq this.activeTab 'leaderboard') 'active'}}"
+            {{on "click" (fn this.setTab "leaderboard")}}>Standings</button>
+    <button class="bookie-tab {{if (eq this.activeTab 'rules') 'active'}}"
+            {{on "click" (fn this.setTab "rules")}}>Rules</button>
+    {{#if this.currentUser.staff}}
+      <button class="bookie-tab bookie-tab-admin {{if (eq this.activeTab 'admin') 'active'}}"
+              {{on "click" (fn this.setTab "admin")}}>
+        {{d-icon "wrench"}} Admin
+      </button>
+    {{/if}}
+  </div>
+
+  {{! ══════════════════════════════════════════════════ }}
+  {{! PANEL: Open matches                                }}
+  {{! ══════════════════════════════════════════════════ }}
+  {{#if (eq this.activeTab "matches")}}
+  <div class="bookie-panel">
+    {{#if this.matches.length}}
+      <div class="bookie-matches-grid">
+        {{#each this.matches as |match|}}
+          <div class="bookie-match-card {{if match.userBet 'has-bet'}}">
+
+            <div class="bookie-match-teams">
+              <span class="bookie-team">{{match.home_team}}</span>
+              <span class="bookie-vs">vs</span>
+              <span class="bookie-team">{{match.away_team}}</span>
+            </div>
+            <div class="bookie-match-deadline">Closes: {{match.formattedDeadline}}</div>
+
+            {{#if match.userBet}}
+              {{! Already placed a bet }}
+              <div class="bookie-existing-bet">
+                <div class="bookie-bet-badge bet-{{match.userBet.choice}}">
+                  {{match.userBetLabel}}
+                  &nbsp;·&nbsp;{{match.userBet.amount}} {{this.currency}}
+                  &nbsp;@&nbsp;{{match.userBet.odds}}x
+                  &nbsp;→&nbsp;{{match.userBet.potential_payout}} {{this.currency}}
+                </div>
+                {{#if match.canBet}}
+                  <button class="btn btn-small btn-danger"
+                          {{on "click" (fn this.cancelBet match)}}>
+                    Cancel bet
+                  </button>
+                {{/if}}
+              </div>
+            {{else if match.canBet}}
+              {{! Bet form }}
+              <div class="bookie-bet-form">
+                <div class="bookie-odds-row">
+                  <button class="bookie-odds-btn {{if (eq match.selectedChoice 'home') 'selected'}}"
+                          {{on "click" (fn this.selectChoice match "home")}}>
+                    <span class="bookie-odds-team">{{match.home_team}}</span>
+                    <span class="bookie-odds-value">{{match.odds_home}}</span>
+                  </button>
+                  <button class="bookie-odds-btn {{if (eq match.selectedChoice 'draw') 'selected'}}"
+                          {{on "click" (fn this.selectChoice match "draw")}}>
+                    <span class="bookie-odds-team">Draw</span>
+                    <span class="bookie-odds-value">{{match.odds_draw}}</span>
+                  </button>
+                  <button class="bookie-odds-btn {{if (eq match.selectedChoice 'away') 'selected'}}"
+                          {{on "click" (fn this.selectChoice match "away")}}>
+                    <span class="bookie-odds-team">{{match.away_team}}</span>
+                    <span class="bookie-odds-value">{{match.odds_away}}</span>
+                  </button>
+                </div>
+
+                {{#if match.selectedChoice}}
+                  <div class="bookie-amount-row">
+                    <input class="bookie-amount-input"
+                           type="number" min="10" max="{{this.balance}}"
+                           placeholder="Amount (min 10)"
+                           value={{match.betAmount}}
+                           {{on "input" (fn this.setAmount match)}} />
+                    {{#if match.betAmount}}
+                      <span class="bookie-payout-preview">
+                        Win: {{match.calcPayout}} {{this.currency}}
+                      </span>
+                    {{/if}}
+                    <button class="btn btn-primary bookie-place-bet"
+                            disabled={{match.betDisabled}}
+                            {{on "click" (fn this.placeBet match)}}>
+                      Place bet
+                    </button>
+                  </div>
+                {{/if}}
+
+                {{#if match.betError}}
+                  <div class="bookie-error">{{match.betError}}</div>
+                {{/if}}
+              </div>
+            {{else}}
+              <div class="bookie-closed-notice">Betting closed for this match</div>
+            {{/if}}
+
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="bookie-empty">
+        No matches open for betting right now — check back soon!
+      </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{! ══════════════════════════════════════════════════ }}
+  {{! PANEL: Results                                     }}
+  {{! ══════════════════════════════════════════════════ }}
+  {{#if (eq this.activeTab "results")}}
+  <div class="bookie-panel">
+    {{#if this.settledMatches.length}}
+      <div class="bookie-results-list">
+        {{#each this.settledMatches as |match|}}
+          <div class="bookie-result-row">
+            <div class="bookie-result-teams">
+              {{match.home_team}} vs {{match.away_team}}
+            </div>
+            <div class="bookie-result-outcome result-{{match.result}}">
+              {{match.resultText}}
+            </div>
+            {{#if match.userBet}}
+              <div class="bookie-result-mybet {{match.userBetResultClass}}">
+                {{#if (eq match.userBet.status "won")}}
+                  🏆 Won {{match.userBet.payout}} {{this.currency}}
+                {{else}}
+                  Lost ({{match.userBet.amount}} {{this.currency}})
+                {{/if}}
+              </div>
+            {{/if}}
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="bookie-empty">No settled matches yet.</div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{! ══════════════════════════════════════════════════ }}
+  {{! PANEL: Wallet                                      }}
+  {{! ══════════════════════════════════════════════════ }}
+  {{#if (eq this.activeTab "wallet")}}
+  <div class="bookie-panel">
+    <div class="bookie-wallet-balance">
+      Balance: <strong>{{this.walletBalance}} {{this.currency}}</strong>
+    </div>
+    <h3>Recent transactions</h3>
+    {{#if this.walletTransactions.length}}
+      <table class="bookie-tx-table">
+        <thead>
+          <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          {{#each this.walletTransactions as |tx|}}
+            <tr class="{{if tx.isPositive 'tx-positive' 'tx-negative'}}">
+              <td>{{tx.formattedDate}}</td>
+              <td>{{tx.description}}</td>
+              <td class="tx-amount">
+                {{#if tx.isPositive}}+{{/if}}{{tx.amount}}
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    {{else}}
+      <div class="bookie-empty">No transactions yet.</div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{! ══════════════════════════════════════════════════ }}
+  {{! PANEL: Standings                                   }}
+  {{! ══════════════════════════════════════════════════ }}
+  {{#if (eq this.activeTab "leaderboard")}}
+  <div class="bookie-panel bookie-standings-panel">
+
+    {{! Sub-tab navigation }}
+    <div class="bookie-standings-tabs">
+      <button class="bookie-standings-tab {{if (eq this.standingsTab 'league-table') 'active'}}"
+              {{on "click" (fn this.setStandingsTab "league-table")}}>
+        League Table
+      </button>
+      <button class="bookie-standings-tab {{if (eq this.standingsTab 'richest-gooner') 'active'}}"
+              {{on "click" (fn this.setStandingsTab "richest-gooner")}}>
+        Richest Gooner
+      </button>
+    </div>
+
+    {{! ── League Table ── }}
+    {{#if (eq this.standingsTab "league-table")}}
+    <div class="bookie-standings-card">
+      <div class="bookie-standings-card-header">
+        <div>
+          <h2 class="bookie-standings-title">League Table</h2>
+          <p class="bookie-standings-desc">Resets every two months. Rewards form, consistency and streaks.</p>
+        </div>
+        {{#if this.currentPeriodLabel}}
+          <span class="bookie-period-pill">Period: {{this.currentPeriodLabel}}</span>
+        {{/if}}
+      </div>
+
+      {{#if this.leaguePodium.length}}
+        {{! Podium: top 3 — order: 2nd left, 1st centre, 3rd right via CSS }}
+        <div class="bookie-podium">
+          {{#each this.leaguePodium as |entry i|}}
+            <div class="bookie-podium-card rank-{{entry.rank}}">
+              <span class="bookie-podium-rank-num">{{entry.rank}}</span>
+              <span class="bookie-podium-medal">
+                {{#if (eq entry.rank 1)}}🥇{{else if (eq entry.rank 2)}}🥈{{else}}🥉{{/if}}
+              </span>
+              <span class="bookie-podium-rank-pill">
+                {{#if (eq entry.rank 1)}}1st{{else if (eq entry.rank 2)}}2nd{{else}}3rd{{/if}}
+              </span>
+              <span class="bookie-podium-name">{{entry.username}}</span>
+              <span class="bookie-podium-value">{{entry.points}} pts</span>
+            </div>
+          {{/each}}
+        </div>
+
+        {{! Rest of the table (#4+) }}
+        {{#if this.leagueRest.length}}
+        <table class="bookie-lb-table bookie-standings-rest">
+          <tbody>
+            {{#each this.leagueRest as |entry|}}
+              <tr>
+                <td class="lb-rank-cell">#{{entry.rank}}</td>
+                <td><a href="/u/{{entry.username}}">{{entry.username}}</a></td>
+                <td class="lb-balance">{{entry.points}} pts</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        {{/if}}
+      {{else}}
+        <div class="bookie-empty">No points yet this period — place your first bet!</div>
+      {{/if}}
+    </div>
+    {{/if}}
+
+    {{! ── Richest Gooner ── }}
+    {{#if (eq this.standingsTab "richest-gooner")}}
+    <div class="bookie-standings-card">
+      <div class="bookie-standings-card-header">
+        <div>
+          <h2 class="bookie-standings-title">Richest Gooner</h2>
+          <p class="bookie-standings-desc">Runs across the full season. Ranked by total coins.</p>
+        </div>
+        <span class="bookie-period-pill">Season-long ranking</span>
+      </div>
+
+      {{#if this.richestPodium.length}}
+        <div class="bookie-podium">
+          {{#each this.richestPodium as |entry|}}
+            <div class="bookie-podium-card rank-{{entry.rank}}">
+              <span class="bookie-podium-rank-num">{{entry.rank}}</span>
+              <span class="bookie-podium-medal">
+                {{#if (eq entry.rank 1)}}🥇{{else if (eq entry.rank 2)}}🥈{{else}}🥉{{/if}}
+              </span>
+              <span class="bookie-podium-rank-pill">
+                {{#if (eq entry.rank 1)}}1st{{else if (eq entry.rank 2)}}2nd{{else}}3rd{{/if}}
+              </span>
+              <span class="bookie-podium-name">{{entry.username}}</span>
+              <span class="bookie-podium-value">{{entry.balance}} {{this.currency}}</span>
+            </div>
+          {{/each}}
+        </div>
+
+        {{#if this.richestRest.length}}
+        <table class="bookie-lb-table bookie-standings-rest">
+          <tbody>
+            {{#each this.richestRest as |entry|}}
+              <tr>
+                <td class="lb-rank-cell">#{{entry.rank}}</td>
+                <td><a href="/u/{{entry.username}}">{{entry.username}}</a></td>
+                <td class="lb-balance">{{entry.balance}} {{this.currency}}</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        {{/if}}
+      {{else}}
+        <div class="bookie-empty">No data yet — place your first bet!</div>
+      {{/if}}
+    </div>
+    {{/if}}
+
+  </div>
+  {{/if}}
+
+  {{! ══════════════════════════════════════════════════ }}
+  {{! PANEL: Rules                                       }}
+  {{! ══════════════════════════════════════════════════ }}
+  {{#if (eq this.activeTab "rules")}}
+  <div class="bookie-panel bookie-rules-panel">
+
+    <div class="bookie-rules-intro">
+      Bookie runs two parallel competitions. Both are purely virtual — no real money involved.
+      Every member starts with {{this.currency}} to play with. Good luck! ⚽
+    </div>
+
+    {{! League Table }}
+    <div class="bookie-rules-section">
+      <div class="bookie-rules-section-header">
+        <span class="bookie-rules-icon">🏆</span>
+        <h2 class="bookie-rules-title">League Table</h2>
+        <span class="bookie-period-pill">Resets every two months</span>
+      </div>
+      <p class="bookie-rules-tagline">Rewards picking accuracy, consistency and hot streaks.</p>
+
+      <h3 class="bookie-rules-subheading">How points are earned</h3>
+      <div class="bookie-rules-grid">
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts">+2</span>
+          <div>
+            <strong>Participation</strong>
+            <span>Placing any bet on a match</span>
+          </div>
+        </div>
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts">+10</span>
+          <div>
+            <strong>Correct pick</strong>
+            <span>Your predicted outcome was right</span>
+          </div>
+        </div>
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts">+odds bonus</span>
+          <div>
+            <strong>Odds bonus</strong>
+            <span>Correct pick on a longer shot earns extra pts — calculated as <em>round((odds − 1) × 4)</em>. A 3.50 draw pays +10 pts on top of the base reward.</span>
+          </div>
+        </div>
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts">+5 / +10 / +20</span>
+          <div>
+            <strong>Streak bonus</strong>
+            <span>3 correct picks in a row: <strong>+5</strong> · 5 in a row: <strong>+10</strong> · 8 in a row: <strong>+20</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="bookie-rules-subheading">Periods</h3>
+      <p class="bookie-rules-body">
+        The league table resets every two months: Aug–Sep · Oct–Nov · Dec–Jan · Feb–Mar · Apr–May.
+        At the end of each period the top 3 are snapshotted — you can view previous winners in the Standings tab.
+      </p>
+
+      <h3 class="bookie-rules-subheading">Important notes</h3>
+      <p class="bookie-rules-body">
+        Bet size does not affect your points. A minimum 10-coin bet on a match earns the same points as a max bet.
+        The league table is purely about picking the right outcome, not risk-taking.
+      </p>
+    </div>
+
+    {{! Richest Gooner }}
+    <div class="bookie-rules-section">
+      <div class="bookie-rules-section-header">
+        <span class="bookie-rules-icon">💰</span>
+        <h2 class="bookie-rules-title">Richest Gooner</h2>
+        <span class="bookie-period-pill">Season-long</span>
+      </div>
+      <p class="bookie-rules-tagline">Ranked by your current coin balance. Runs all season — never resets.</p>
+
+      <h3 class="bookie-rules-subheading">How coins work</h3>
+      <div class="bookie-rules-grid">
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts bookie-rules-pts--start">1,000</span>
+          <div>
+            <strong>Starting balance</strong>
+            <span>Every member begins the season with 1,000 {{this.currency}}</span>
+          </div>
+        </div>
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts bookie-rules-pts--bonus">+100</span>
+          <div>
+            <strong>Weekly bonus</strong>
+            <span>100 free {{this.currency}} deposited every Monday — keep coming back!</span>
+          </div>
+        </div>
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts bookie-rules-pts--win">Win</span>
+          <div>
+            <strong>Bet winnings</strong>
+            <span>Correct bets pay out at the quoted odds. A 100-coin bet at 3.50 returns 350 coins.</span>
+          </div>
+        </div>
+        <div class="bookie-rules-row">
+          <span class="bookie-rules-pts bookie-rules-pts--loss">Loss</span>
+          <div>
+            <strong>Losing bets</strong>
+            <span>Your staked coins are deducted when a bet loses. Budget wisely — you can't go below zero.</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="bookie-rules-subheading">Strategy</h3>
+      <p class="bookie-rules-body">
+        Unlike the League Table, Richest Gooner rewards risk management. Chasing long shots can win you a fortune or wipe you out. Steady, disciplined betting often beats going all-in.
+      </p>
+    </div>
+
+    {{! General rules }}
+    <div class="bookie-rules-section bookie-rules-section--general">
+      <h3 class="bookie-rules-subheading">General rules</h3>
+      <ul class="bookie-rules-list">
+        <li>One bet per match, per person. No changing your mind after the deadline.</li>
+        <li>You can cancel a pending bet before the match deadline — your coins are refunded.</li>
+        <li>Admins set the odds and settle matches. Results are final once settled.</li>
+        <li>This is for fun only. Coins have no monetary value.</li>
+      </ul>
+    </div>
+
+  </div>
+  {{/if}}
+
+  {{! ══════════════════════════════════════════════════ }}
+  {{! PANEL: Admin (staff only)                          }}
+  {{! ══════════════════════════════════════════════════ }}
+  {{#if (and (eq this.activeTab "admin") this.currentUser.staff)}}
+  <div class="bookie-panel bookie-admin-panel">
+
+    <h2>Create new match</h2>
+    <div class="bookie-admin-form">
+      <div class="bookie-form-row">
+        <label>Home team</label>
+        <input class="bookie-input" type="text"
+               value={{this.nmHomeTeam}} placeholder="e.g. Arsenal"
+               {{on "input" (fn this.updateField "nmHomeTeam")}} />
+      </div>
+      <div class="bookie-form-row">
+        <label>Away team</label>
+        <input class="bookie-input" type="text"
+               value={{this.nmAwayTeam}} placeholder="e.g. Chelsea"
+               {{on "input" (fn this.updateField "nmAwayTeam")}} />
+      </div>
+      <div class="bookie-form-row">
+        <label>Title (optional — auto-generated if empty)</label>
+        <input class="bookie-input" type="text"
+               value={{this.nmTitle}} placeholder="e.g. Arsenal vs Chelsea — PL GW30"
+               {{on "input" (fn this.updateField "nmTitle")}} />
+      </div>
+      <div class="bookie-form-row bookie-odds-form-row">
+        <div>
+          <label>Odds: home win</label>
+          <input class="bookie-input bookie-odds-input" type="number"
+                 step="0.05" min="1.01"
+                 value={{this.nmOddsHome}}
+                 {{on "input" (fn this.updateField "nmOddsHome")}} />
+        </div>
+        <div>
+          <label>Odds: draw</label>
+          <input class="bookie-input bookie-odds-input" type="number"
+                 step="0.05" min="1.01"
+                 value={{this.nmOddsDraw}}
+                 {{on "input" (fn this.updateField "nmOddsDraw")}} />
+        </div>
+        <div>
+          <label>Odds: away win</label>
+          <input class="bookie-input bookie-odds-input" type="number"
+                 step="0.05" min="1.01"
+                 value={{this.nmOddsAway}}
+                 {{on "input" (fn this.updateField "nmOddsAway")}} />
+        </div>
+      </div>
+      <div class="bookie-form-row">
+        <label>Deadline (kick-off time)</label>
+        <input class="bookie-input" type="datetime-local"
+               value={{this.nmDeadline}}
+               {{on "input" (fn this.updateField "nmDeadline")}} />
+      </div>
+      {{#if this.adminError}}
+        <div class="bookie-error">{{this.adminError}}</div>
+      {{/if}}
+      <button class="btn btn-primary" {{on "click" this.createMatch}}>
+        Create match
+      </button>
+    </div>
+
+    <h2 class="bookie-section-title">Open matches</h2>
+    {{#if this.adminMatches.length}}
+      {{#each this.adminMatches as |match|}}
+        <div class="bookie-admin-match-row">
+          <div class="bookie-admin-match-info">
+            <strong>{{match.title}}</strong>
+            <span class="bookie-admin-odds">
+              Home {{match.odds_home}} · Draw {{match.odds_draw}} · Away {{match.odds_away}}
+            </span>
+            <span class="bookie-admin-stats">
+              {{match.total_bets}} bets · {{match.total_coins}} coins
+              &nbsp;(🏠 {{match.bets_home}} · ➡️ {{match.bets_draw}} · ✈️ {{match.bets_away}})
+            </span>
+            <span class="bookie-admin-deadline">Deadline: {{match.formattedDeadline}}</span>
+          </div>
+          <div class="bookie-admin-actions">
+            <span class="bookie-settle-label">Settle as:</span>
+            <button class="btn btn-small btn-success"
+                    {{on "click" (fn this.settleMatch match "home")}}>
+              Home wins
+            </button>
+            <button class="btn btn-small"
+                    {{on "click" (fn this.settleMatch match "draw")}}>
+              Draw
+            </button>
+            <button class="btn btn-small btn-danger"
+                    {{on "click" (fn this.settleMatch match "away")}}>
+              Away wins
+            </button>
+            <button class="btn btn-small btn-flat bookie-delete-btn"
+                    {{on "click" (fn this.deleteMatch match)}}>
+              {{d-icon "trash-alt"}}
+            </button>
+          </div>
+        </div>
+      {{/each}}
+    {{else}}
+      <div class="bookie-empty">No open matches to manage.</div>
+    {{/if}}
+
+  </div>
+  {{/if}}
+
+</div>

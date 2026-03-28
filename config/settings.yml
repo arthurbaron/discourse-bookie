@@ -1,0 +1,21 @@
+bookie_enabled:
+  client: true
+  default: true
+  type: bool
+
+bookie_starting_balance:
+  default: 1000
+  type: integer
+
+bookie_weekly_bonus:
+  default: 100
+  type: integer
+
+bookie_min_bet:
+  default: 10
+  type: integer
+
+bookie_currency_name:
+  default: "Coins"
+  client: true
+  type: string

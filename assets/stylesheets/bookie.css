@@ -1,0 +1,1171 @@
+/* ═══════════════════════════════════════════════════════
+   discourse-bookie — main stylesheet
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Page layout ──────────────────────────────────────── */
+
+.bookie-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem 1rem 3rem;
+  font-size: 0.95rem;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.bookie-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--primary-low);
+}
+
+.bookie-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bookie-header-trophy {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.bookie-header-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.bookie-subtitle {
+  font-size: 0.8rem;
+  color: var(--primary-medium);
+  margin-left: 0.25rem;
+}
+
+.bookie-balance-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: var(--tertiary-low);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+}
+
+.bookie-balance-label {
+  font-size: 0.75rem;
+  color: var(--primary-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bookie-balance-amount {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--tertiary);
+}
+
+/* ── Tab navigation ───────────────────────────────────── */
+
+.bookie-tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--primary-low);
+  padding-bottom: 0;
+}
+
+.bookie-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.6rem 1rem;
+  margin-bottom: -2px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--primary-medium);
+  border-radius: 4px 4px 0 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.bookie-tab:hover {
+  color: var(--primary);
+  background: var(--primary-very-low);
+}
+
+.bookie-tab.active {
+  color: var(--tertiary);
+  border-bottom-color: var(--tertiary);
+  font-weight: 600;
+}
+
+.bookie-tab-admin {
+  margin-left: auto;
+}
+
+/* ── Panel ────────────────────────────────────────────── */
+
+.bookie-panel {
+  animation: bookieFadeIn 0.2s ease;
+}
+
+@keyframes bookieFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bookie-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--primary-medium);
+  font-style: italic;
+}
+
+.bookie-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--danger-low);
+  border-radius: 4px;
+}
+
+.bookie-section-title {
+  margin-top: 2rem;
+}
+
+/* ── Match cards ──────────────────────────────────────── */
+
+.bookie-matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.bookie-match-card {
+  background: var(--secondary);
+  border: 1px solid var(--primary-low);
+  border-radius: 10px;
+  padding: 1rem;
+  transition: box-shadow 0.15s;
+}
+
+.bookie-match-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bookie-match-card.has-bet {
+  border-color: var(--tertiary-low);
+  background: var(--tertiary-very-low);
+}
+
+.bookie-match-teams {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.bookie-team {
+  flex: 1;
+}
+
+.bookie-vs {
+  color: var(--primary-medium);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.bookie-match-deadline {
+  font-size: 0.78rem;
+  color: var(--primary-medium);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Bet form ─────────────────────────────────────────── */
+
+.bookie-odds-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.bookie-odds-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem 0.25rem;
+  background: var(--primary-very-low);
+  border: 2px solid var(--primary-low);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.bookie-odds-btn:hover {
+  border-color: var(--tertiary-low);
+  background: var(--tertiary-very-low);
+}
+
+.bookie-odds-btn.selected {
+  border-color: var(--tertiary);
+  background: var(--tertiary-low);
+}
+
+.bookie-odds-team {
+  font-size: 0.72rem;
+  color: var(--primary-medium);
+  text-align: center;
+  word-break: break-word;
+}
+
+.bookie-odds-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tertiary);
+}
+
+.bookie-amount-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bookie-amount-input {
+  width: 90px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--primary-low);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+.bookie-payout-preview {
+  font-size: 0.82rem;
+  color: var(--success);
+  white-space: nowrap;
+}
+
+.bookie-place-bet {
+  margin-left: auto;
+}
+
+/* ── Existing bet badge ───────────────────────────────── */
+
+.bookie-existing-bet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bookie-bet-badge {
+  font-size: 0.82rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+  border-left: 3px solid var(--tertiary);
+  background: var(--tertiary-very-low);
+  color: var(--primary);
+}
+
+.bookie-closed-notice {
+  font-size: 0.82rem;
+  color: var(--primary-medium);
+  font-style: italic;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+/* ── Results ──────────────────────────────────────────── */
+
+.bookie-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bookie-result-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.75rem;
+  background: var(--secondary);
+  border: 1px solid var(--primary-low);
+  border-radius: 8px;
+}
+
+.bookie-result-teams {
+  font-weight: 600;
+  flex: 1;
+  min-width: 150px;
+}
+
+.bookie-result-outcome {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--primary-low);
+}
+
+.bookie-result-mybet {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.bet-status-won  { color: var(--success); }
+.bet-status-lost { color: var(--danger); }
+
+/* ── Wallet ───────────────────────────────────────────── */
+
+.bookie-wallet-balance {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.bookie-tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.bookie-tx-table th {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 2px solid var(--primary-low);
+  color: var(--primary-medium);
+  font-weight: 600;
+}
+
+.bookie-tx-table tr:not(:last-child) td {
+  border-bottom: 1px solid var(--primary-very-low);
+}
+
+.bookie-tx-table td {
+  padding: 0.45rem 0.5rem;
+}
+
+.tx-positive .tx-amount { color: var(--success); font-weight: 600; }
+.tx-negative .tx-amount { color: var(--danger); }
+
+/* ── Leaderboard ──────────────────────────────────────── */
+
+.bookie-lb-panel {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.bookie-lb-section {
+  flex: 1;
+  min-width: 260px;
+}
+
+.bookie-lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.bookie-lb-table th {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 2px solid var(--primary-low);
+  color: var(--primary-medium);
+}
+
+.bookie-lb-table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--primary-very-low);
+}
+
+.lb-rank-cell {
+  font-weight: 700;
+  color: var(--primary-medium);
+  width: 30px;
+}
+
+.lb-rank-1 td { font-weight: 700; }
+.lb-rank-1 .lb-rank-cell { color: gold; font-size: 1.1rem; }
+.lb-rank-2 .lb-rank-cell { color: silver; }
+.lb-rank-3 .lb-rank-cell { color: #cd7f32; }
+
+.lb-balance { font-weight: 600; }
+
+/* ── Admin panel ──────────────────────────────────────── */
+
+.bookie-admin-panel h2 {
+  margin-top: 1.5rem;
+}
+
+.bookie-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--primary-very-low);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bookie-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bookie-form-row label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary-medium);
+}
+
+.bookie-input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--primary-low);
+  border-radius: 5px;
+  font-size: 0.9rem;
+  background: var(--secondary);
+  color: var(--primary);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bookie-odds-form-row {
+  flex-direction: row;
+  gap: 0.75rem;
+}
+
+.bookie-odds-form-row > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bookie-odds-input {
+  text-align: center;
+  font-weight: 700;
+  color: var(--tertiary);
+}
+
+/* Admin match list */
+
+.bookie-admin-match-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--secondary);
+  border: 1px solid var(--primary-low);
+  border-radius: 8px;
+}
+
+.bookie-admin-match-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.bookie-admin-odds,
+.bookie-admin-stats,
+.bookie-admin-deadline {
+  font-size: 0.8rem;
+  color: var(--primary-medium);
+}
+
+.bookie-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.bookie-settle-label {
+  font-size: 0.82rem;
+  color: var(--primary-medium);
+}
+
+.bookie-delete-btn {
+  color: var(--danger) !important;
+  margin-left: 0.5rem;
+}
+
+/* ── [bookie] widget in posts ─────────────────────────── */
+
+.bookie-widget {
+  border: 1px solid var(--primary-low);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1rem 0;
+  font-size: 0.88rem;
+}
+
+.bookie-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--tertiary-low);
+  font-weight: 600;
+}
+
+.bookie-widget-link {
+  margin-left: auto;
+  font-size: 0.82rem;
+}
+
+.bookie-widget-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bookie-widget-match {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--primary-very-low);
+}
+
+.bookie-widget-match:last-child {
+  border-bottom: none;
+}
+
+.bookie-widget-teams {
+  font-weight: 600;
+  flex: 1;
+}
+
+.bookie-widget-odds {
+  font-size: 0.8rem;
+  color: var(--primary-medium);
+}
+
+.bookie-widget-bet-placed {
+  color: var(--success);
+  font-size: 0.82rem;
+}
+
+.bookie-widget-more {
+  display: block;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.82rem;
+  background: var(--primary-very-low);
+}
+
+.bookie-widget-loading,
+.bookie-widget-empty {
+  padding: 0.75rem 0.9rem;
+  color: var(--primary-medium);
+  font-style: italic;
+}
+
+/* ── Mobile ───────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .bookie-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bookie-balance-badge {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .bookie-matches-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bookie-odds-row {
+    flex-direction: column;
+  }
+
+  .bookie-odds-btn {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .bookie-lb-panel {
+    flex-direction: column;
+  }
+
+  .bookie-admin-match-row {
+    flex-direction: column;
+  }
+
+  .bookie-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0;
+  }
+
+  .bookie-tab {
+    white-space: nowrap;
+  }
+
+  .bookie-odds-form-row {
+    flex-direction: column;
+  }
+}
+
+/* ── [bookie-leaderboard] widget ─────────────────────────────────────────── */
+.bookie-leaderboard-widget {
+  border: 1px solid var(--primary-low, #e0e0e0);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  background: var(--secondary, #fff);
+  max-width: 420px;
+}
+
+/* New widget (blw-*) */
+.blw-widget {
+  border: 1px solid var(--primary-low);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 16px 0;
+  max-width: 480px;
+  background: var(--secondary);
+}
+
+.blw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--tertiary);
+  padding: 10px 16px;
+}
+
+.blw-title {
+  color: #fff;
+  font-size: 1em;
+}
+
+/* Override Discourse .cooked a styles inside widget header */
+.blw-widget .blw-header a.blw-full-link,
+.blw-widget .blw-header a.blw-full-link:visited,
+.blw-widget .blw-header a.blw-full-link:hover {
+  color: #fff !important;
+  font-size: 0.85em;
+  opacity: 0.9;
+  text-decoration: none !important;
+}
+
+.blw-widget .blw-header a.blw-full-link:hover { opacity: 1; }
+
+.blw-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--primary-low);
+  background: var(--secondary);
+}
+
+/* Reset all Discourse button defaults on widget tabs */
+.blw-widget .blw-tab {
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  background: none !important;
+  box-shadow: none !important;
+  outline: none;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  border-radius: 0 !important;
+  margin-bottom: -1px;
+  padding: 9px 12px;
+  font-size: 0.88em;
+  color: var(--primary-medium);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.blw-widget .blw-tab:hover {
+  color: var(--primary);
+  background: none !important;
+}
+
+.blw-widget .blw-tab.active {
+  color: var(--tertiary) !important;
+  border-bottom-color: var(--tertiary) !important;
+  font-weight: 600;
+  background: none !important;
+}
+
+.blw-period {
+  font-size: 0.78em;
+  color: var(--primary-medium);
+  padding: 6px 16px 0;
+}
+
+.blw-content {
+  padding: 4px 0 8px;
+}
+
+.blw-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.blw-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  border-bottom: 1px solid var(--primary-low);
+  font-size: 0.9em;
+}
+
+.blw-row:last-child { border-bottom: none; }
+
+.blw-row.blw-top { font-weight: 600; }
+
+.blw-rank {
+  width: 28px;
+  text-align: center;
+  font-size: 1.05em;
+  flex-shrink: 0;
+}
+
+.blw-name {
+  flex: 1;
+  color: var(--tertiary);
+}
+
+.blw-val {
+  color: var(--primary-medium);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.bookie-leaderboard-widget-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.bookie-leaderboard-widget-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--primary-low, #f0f0f0);
+  font-size: 0.9em;
+}
+
+.bookie-leaderboard-widget-row:last-child {
+  border-bottom: none;
+}
+
+.bookie-leaderboard-widget-row.top-three {
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.blw-rank {
+  width: 28px;
+  text-align: center;
+  font-size: 1.1em;
+}
+
+.blw-name {
+  flex: 1;
+  color: var(--tertiary, #0088cc);
+}
+
+.blw-balance {
+  color: var(--primary-medium, #666);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Standings panel & sub-tabs ──────────────────────────────────────────── */
+.bookie-standings-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--primary-low);
+  margin-bottom: 20px;
+}
+
+.bookie-standings-tab {
+  background: none;
+  border: none;
+  padding: 8px 20px;
+  font-size: 0.95em;
+  color: var(--primary-medium);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.bookie-standings-tab:hover {
+  color: var(--primary);
+}
+
+.bookie-standings-tab.active {
+  color: var(--tertiary);
+  border-bottom-color: var(--tertiary);
+  font-weight: 600;
+}
+
+/* ── Standings card ───────────────────────────────────────────────────────── */
+.bookie-standings-card {
+  background: var(--primary-very-low, rgba(0,0,0,0.03));
+  border: 1px solid var(--primary-low);
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+.bookie-standings-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.bookie-standings-title {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 4px;
+}
+
+.bookie-standings-desc {
+  font-size: 0.85em;
+  color: var(--primary-medium);
+  margin: 0;
+}
+
+.bookie-period-pill {
+  background: var(--tertiary);
+  color: #fff;
+  font-size: 0.78em;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Podium ───────────────────────────────────────────────────────────────── */
+.bookie-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.bookie-podium-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  padding: 20px 16px;
+  min-width: 140px;
+  flex: 1;
+  max-width: 200px;
+  text-align: center;
+  color: #fff;
+  gap: 8px;
+}
+
+/* Gold — #1: tallest, centre */
+.bookie-podium-card.rank-1 {
+  background: linear-gradient(160deg, #c8962a 0%, #e8b84b 50%, #a87020 100%);
+  padding-top: 28px;
+  padding-bottom: 28px;
+  order: 2;
+}
+
+/* Silver — #2: left */
+.bookie-podium-card.rank-2 {
+  background: linear-gradient(160deg, #6b7280 0%, #9ca3af 50%, #4b5563 100%);
+  order: 1;
+}
+
+/* Bronze — #3: right */
+.bookie-podium-card.rank-3 {
+  background: linear-gradient(160deg, #7c4a1e 0%, #b06a2e 50%, #5c3410 100%);
+  order: 3;
+}
+
+/* Rank number — hidden on desktop, visible on mobile */
+.bookie-podium-rank-num {
+  display: none;
+  font-size: 1.1em;
+  font-weight: 700;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.bookie-podium-medal {
+  font-size: 2em;
+  line-height: 1;
+}
+
+.bookie-podium-rank-pill {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 20px;
+  padding: 2px 12px;
+  font-size: 0.8em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.bookie-podium-name {
+  font-size: 1em;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.bookie-podium-value {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+/* ── Rest of table (#4+) ─────────────────────────────────────────────────── */
+.bookie-standings-rest {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bookie-standings-rest tr {
+  border-top: 1px solid var(--primary-low);
+}
+
+.bookie-standings-rest td {
+  padding: 8px 6px;
+  font-size: 0.9em;
+}
+
+.bookie-standings-rest .lb-rank-cell {
+  color: var(--primary-medium);
+  width: 36px;
+  font-weight: 600;
+}
+
+.bookie-standings-rest a {
+  color: var(--tertiary);
+}
+
+.bookie-standings-rest .lb-balance {
+  text-align: right;
+  color: var(--primary-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  /* Podium becomes vertical stacked rows on mobile */
+  .bookie-podium {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  .bookie-podium-card {
+    flex-direction: row;
+    align-items: center;
+    min-width: unset;
+    max-width: unset;
+    padding: 14px 16px;
+    gap: 12px;
+    border-radius: 10px;
+    /* Stack in rank order on mobile */
+    order: unset !important;
+  }
+
+  /* Sort vertically: rank-1 first, rank-2 second, rank-3 third */
+  .bookie-podium-card.rank-1 { order: 1 !important; }
+  .bookie-podium-card.rank-2 { order: 2 !important; }
+  .bookie-podium-card.rank-3 { order: 3 !important; }
+
+  /* Show rank number, hide medal and pill on mobile */
+  .bookie-podium-rank-num {
+    display: block;
+  }
+  .bookie-podium-medal,
+  .bookie-podium-rank-pill {
+    display: none;
+  }
+
+  /* Name takes remaining space, value right-aligned */
+  .bookie-podium-name {
+    flex: 1;
+    text-align: left;
+  }
+  .bookie-podium-value {
+    text-align: right;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Rules panel ───────────────────────────────────────── */
+
+.bookie-rules-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.bookie-rules-intro {
+  background: var(--primary-low);
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  color: var(--primary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.bookie-rules-section {
+  background: var(--secondary);
+  border: 1px solid var(--primary-low);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+}
+
+.bookie-rules-section--general {
+  background: var(--primary-very-low, var(--primary-low));
+}
+
+.bookie-rules-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
+}
+
+.bookie-rules-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.bookie-rules-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.bookie-rules-tagline {
+  margin: 0 0 1rem;
+  color: var(--primary-medium);
+  font-size: 0.88rem;
+}
+
+.bookie-rules-subheading {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary-medium);
+}
+
+.bookie-rules-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.bookie-rules-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--primary-low);
+  border-radius: 8px;
+}
+
+.bookie-rules-pts {
+  flex-shrink: 0;
+  min-width: 60px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  background: var(--tertiary-low);
+  color: var(--tertiary);
+  white-space: nowrap;
+}
+
+.bookie-rules-pts--start {
+  background: var(--primary-low);
+  color: var(--primary);
+}
+
+.bookie-rules-pts--bonus {
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+  color: #16a34a;
+}
+
+.bookie-rules-pts--win {
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+  color: #16a34a;
+}
+
+.bookie-rules-pts--loss {
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  color: #dc2626;
+}
+
+.bookie-rules-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.bookie-rules-row > div strong {
+  font-size: 0.9rem;
+}
+
+.bookie-rules-row > div span {
+  color: var(--primary-medium);
+}
+
+.bookie-rules-body {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--primary);
+  margin: 0.25rem 0 0;
+}
+
+.bookie-rules-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bookie-rules-list li {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--primary);
+}
