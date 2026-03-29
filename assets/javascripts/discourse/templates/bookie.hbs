@@ -539,6 +539,38 @@
       <div class="bookie-empty">No open matches to manage.</div>
     {{/if}}
 
+    {{! ── Season management ── }}
+    <div class="bookie-season-section">
+      <h2 class="bookie-section-title">Season management</h2>
+      <div class="bookie-season-card">
+        <div class="bookie-season-info">
+          <span class="bookie-season-label">Current season</span>
+          <span class="bookie-season-key">{{this.seasonKey}}</span>
+        </div>
+        {{#if this.seasonAlreadyClosed}}
+          <div class="bookie-season-closed-notice">
+            ✅ Season {{this.seasonKey}} is closed. Standings have been saved.
+            Start a new season by clicking End Season at the end of next season.
+          </div>
+        {{else}}
+          <p class="bookie-season-desc">
+            Closing the season saves the Richest Gooner top 3 as permanent winners
+            and resets all wallet balances to the starting amount.
+            The League Table resets automatically every two months.
+          </p>
+          <button class="btn btn-danger bookie-end-season-btn"
+                  disabled={{this.seasonLoading}}
+                  {{on "click" this.endSeason}}>
+            {{#if this.seasonLoading}}
+              Closing season…
+            {{else}}
+              🏁 End season {{this.seasonKey}}
+            {{/if}}
+          </button>
+        {{/if}}
+      </div>
+    </div>
+
   </div>
   {{/if}}
 

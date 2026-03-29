@@ -97,6 +97,9 @@ export default class BookieController extends Controller {
   // Admin state
   @tracked adminMatches = [];
   @tracked adminError = null;
+  @tracked seasonKey = null;
+  @tracked seasonAlreadyClosed = false;
+  @tracked seasonLoading = false;
   @tracked nmHomeTeam = "";
   @tracked nmAwayTeam = "";
   @tracked nmTitle = "";
@@ -143,6 +146,7 @@ export default class BookieController extends Controller {
     this.activeTab = tab;
     if (tab === "admin") {
       this.loadAdminMatches();
+      this.loadSeasonStatus();
     } else if (tab === "wallet") {
       this.refreshWallet();
     }
@@ -317,6 +321,44 @@ export default class BookieController extends Controller {
       );
     } catch (e) {
       alert(e.jqXHR?.responseJSON?.error || "Failed to settle match.");
+    }
+  }
+
+  // ── Season management ────────────────────────────────
+
+  async loadSeasonStatus() {
+    try {
+      const data = await ajax("/admin/plugins/bookie/season.json");
+      this.seasonKey = data.current_season_key;
+      this.seasonAlreadyClosed = data.already_closed;
+    } catch (_e) {
+      // silently fail
+    }
+  }
+
+  @action
+  async endSeason() {
+    if (
+      !confirm(
+        `End season ${this.seasonKey}?\n\n` +
+        `This will:\n` +
+        `• Save the Richest Gooner top 3 as season winners\n` +
+        `• Reset all wallet balances to the starting amount\n\n` +
+        `This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    this.seasonLoading = true;
+    try {
+      await ajax("/admin/plugins/bookie/season/end.json", { type: "POST" });
+      this.seasonAlreadyClosed = true;
+      alert(`Season ${this.seasonKey} closed. All balances have been reset!`);
+    } catch (e) {
+      alert(e.jqXHR?.responseJSON?.error || "Failed to end season.");
+    } finally {
+      this.seasonLoading = false;
     }
   }
 

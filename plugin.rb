@@ -15,6 +15,7 @@ after_initialize do
     "app/models/bookie_monthly_snapshot",
     "app/models/bookie_league_entry",
     "app/models/bookie_period_snapshot",
+    "app/models/bookie_season_snapshot",
     "app/controllers/bookie_page_controller",
     "app/controllers/bookie_controller",
     "app/controllers/admin_bookie_controller",
@@ -42,6 +43,8 @@ after_initialize do
       put    "/matches/:id"        => "admin_bookie#update_match"
       delete "/matches/:id"        => "admin_bookie#destroy_match"
       post   "/matches/:id/settle" => "admin_bookie#settle_match"
+      get    "/season"             => "admin_bookie#season_status"
+      post   "/season/end"         => "admin_bookie#end_season"
     end
   end
 end

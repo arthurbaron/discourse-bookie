@@ -68,6 +68,38 @@ class AdminBookieController < Admin::AdminController
     end
   end
 
+  # GET /admin/plugins/bookie/season
+  def season_status
+    season_key = BookieSeasonSnapshot.current_season_key
+    existing   = BookieSeasonSnapshot.where(season_key: season_key).exists?
+    past       = BookieSeasonSnapshot
+      .select(:season_key)
+      .distinct
+      .order(season_key: :desc)
+      .limit(5)
+      .pluck(:season_key)
+
+    render json: {
+      current_season_key: season_key,
+      already_closed:     existing,
+      past_seasons:       past
+    }
+  end
+
+  # POST /admin/plugins/bookie/season/end
+  def end_season
+    season_key = BookieSeasonSnapshot.current_season_key
+
+    if BookieSeasonSnapshot.where(season_key: season_key).exists?
+      return render json: { error: "Season #{season_key} has already been closed." }, status: 422
+    end
+
+    BookieSeasonSnapshot.close_season!(season_key)
+    render json: { success: true, season_key: season_key }
+  rescue => e
+    render json: { error: e.message }, status: 500
+  end
+
   private
 
   def find_match
