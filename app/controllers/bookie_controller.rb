@@ -5,7 +5,7 @@ class BookieController < ApplicationController
 
   # GET /bookie/matches
   def matches
-    open_matches = BookieMatch.upcoming.to_a
+    open_matches = BookieMatch.unsettled.to_a
     match_ids    = open_matches.map(&:id)
 
     user_bets = BookieBet

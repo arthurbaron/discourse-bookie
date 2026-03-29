@@ -3,7 +3,7 @@ class AdminBookieController < Admin::AdminController
 
   # GET /admin/plugins/bookie/matches
   def matches
-    open_matches    = BookieMatch.upcoming
+    open_matches    = BookieMatch.unsettled
     settled_matches = BookieMatch.settled.limit(20)
 
     render json: {

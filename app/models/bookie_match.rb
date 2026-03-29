@@ -7,9 +7,12 @@ class BookieMatch < ActiveRecord::Base
   validates :status, inclusion: { in: %w[open settled] }
   validates :result, inclusion: { in: %w[home draw away] }, allow_nil: true
 
-  scope :open,     -> { where(status: "open").where("deadline > ?", Time.now) }
-  scope :upcoming, -> { open.order(:deadline) }
-  scope :settled,  -> { where(status: "settled").order(updated_at: :desc) }
+  # Betting still open (deadline not yet passed)
+  scope :bettable,     -> { where(status: "open").where("deadline > ?", Time.now) }
+  # All unsettled matches — including those past deadline awaiting admin settlement
+  scope :unsettled,    -> { where(status: "open").order(:deadline) }
+  scope :upcoming,     -> { bettable.order(:deadline) }
+  scope :settled,      -> { where(status: "settled").order(updated_at: :desc) }
 
   def deadline_passed?
     deadline <= Time.now
