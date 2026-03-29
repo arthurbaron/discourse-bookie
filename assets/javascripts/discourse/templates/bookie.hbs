@@ -490,6 +490,9 @@
         <input class="bookie-input" type="datetime-local"
                value={{this.nmDeadline}}
                {{on "input" (fn this.updateField "nmDeadline")}} />
+        <span class="bookie-form-help">
+          Saved from your local timezone: {{this.browserTimeZone}}
+        </span>
       </div>
       {{#if this.adminError}}
         <div class="bookie-error">{{this.adminError}}</div>
@@ -503,36 +506,103 @@
     {{#if this.adminMatches.length}}
       {{#each this.adminMatches as |match|}}
         <div class="bookie-admin-match-row">
-          <div class="bookie-admin-match-info">
-            <strong>{{match.title}}</strong>
-            <span class="bookie-admin-odds">
-              Home {{match.odds_home}} · Draw {{match.odds_draw}} · Away {{match.odds_away}}
-            </span>
-            <span class="bookie-admin-stats">
-              {{match.total_bets}} bets · {{match.total_coins}} coins
-              &nbsp;(🏠 {{match.bets_home}} · ➡️ {{match.bets_draw}} · ✈️ {{match.bets_away}})
-            </span>
-            <span class="bookie-admin-deadline">Deadline: {{match.formattedDeadline}}</span>
-          </div>
-          <div class="bookie-admin-actions">
-            <span class="bookie-settle-label">Settle as:</span>
-            <button class="btn btn-small btn-success"
-                    {{on "click" (fn this.settleMatch match "home")}}>
-              Home wins
-            </button>
-            <button class="btn btn-small"
-                    {{on "click" (fn this.settleMatch match "draw")}}>
-              Draw
-            </button>
-            <button class="btn btn-small btn-danger"
-                    {{on "click" (fn this.settleMatch match "away")}}>
-              Away wins
-            </button>
-            <button class="btn btn-small btn-flat bookie-delete-btn"
-                    {{on "click" (fn this.deleteMatch match)}}>
-              {{d-icon "trash-alt"}}
-            </button>
-          </div>
+          {{#if (eq this.editingMatchId match.id)}}
+            <div class="bookie-admin-edit-grid">
+              <div class="bookie-form-row">
+                <label>Home team</label>
+                <input class="bookie-input" type="text"
+                       value={{this.emHomeTeam}}
+                       {{on "input" (fn this.updateField "emHomeTeam")}} />
+              </div>
+              <div class="bookie-form-row">
+                <label>Away team</label>
+                <input class="bookie-input" type="text"
+                       value={{this.emAwayTeam}}
+                       {{on "input" (fn this.updateField "emAwayTeam")}} />
+              </div>
+              <div class="bookie-form-row bookie-admin-edit-title">
+                <label>Title</label>
+                <input class="bookie-input" type="text"
+                       value={{this.emTitle}}
+                       {{on "input" (fn this.updateField "emTitle")}} />
+              </div>
+              <div class="bookie-form-row">
+                <label>Home odds</label>
+                <input class="bookie-input bookie-odds-input" type="number"
+                       step="0.05" min="1.01"
+                       value={{this.emOddsHome}}
+                       {{on "input" (fn this.updateField "emOddsHome")}} />
+              </div>
+              <div class="bookie-form-row">
+                <label>Draw odds</label>
+                <input class="bookie-input bookie-odds-input" type="number"
+                       step="0.05" min="1.01"
+                       value={{this.emOddsDraw}}
+                       {{on "input" (fn this.updateField "emOddsDraw")}} />
+              </div>
+              <div class="bookie-form-row">
+                <label>Away odds</label>
+                <input class="bookie-input bookie-odds-input" type="number"
+                       step="0.05" min="1.01"
+                       value={{this.emOddsAway}}
+                       {{on "input" (fn this.updateField "emOddsAway")}} />
+              </div>
+              <div class="bookie-form-row bookie-admin-edit-title">
+                <label>Deadline (kick-off time)</label>
+                <input class="bookie-input" type="datetime-local"
+                       value={{this.emDeadline}}
+                       {{on "input" (fn this.updateField "emDeadline")}} />
+                <span class="bookie-form-help">
+                  Saved from your local timezone: {{this.browserTimeZone}}
+                </span>
+              </div>
+              <div class="bookie-admin-edit-actions">
+                <button class="btn btn-primary btn-small"
+                        {{on "click" (fn this.saveMatch match)}}>
+                  Save changes
+                </button>
+                <button class="btn btn-small"
+                        {{on "click" this.cancelEditingMatch}}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          {{else}}
+            <div class="bookie-admin-match-info">
+              <strong>{{match.title}}</strong>
+              <span class="bookie-admin-odds">
+                Home {{match.odds_home}} · Draw {{match.odds_draw}} · Away {{match.odds_away}}
+              </span>
+              <span class="bookie-admin-stats">
+                {{match.total_bets}} bets · {{match.total_coins}} coins
+                &nbsp;(🏠 {{match.bets_home}} · ➡️ {{match.bets_draw}} · ✈️ {{match.bets_away}})
+              </span>
+              <span class="bookie-admin-deadline">Deadline: {{match.formattedDeadline}}</span>
+            </div>
+            <div class="bookie-admin-actions">
+              <button class="btn btn-small"
+                      {{on "click" (fn this.startEditingMatch match)}}>
+                Edit
+              </button>
+              <span class="bookie-settle-label">Settle as:</span>
+              <button class="btn btn-small btn-success"
+                      {{on "click" (fn this.settleMatch match "home")}}>
+                Home wins
+              </button>
+              <button class="btn btn-small"
+                      {{on "click" (fn this.settleMatch match "draw")}}>
+                Draw
+              </button>
+              <button class="btn btn-small btn-danger"
+                      {{on "click" (fn this.settleMatch match "away")}}>
+                Away wins
+              </button>
+              <button class="btn btn-small btn-flat bookie-delete-btn"
+                      {{on "click" (fn this.deleteMatch match)}}>
+                {{d-icon "trash-alt"}}
+              </button>
+            </div>
+          {{/if}}
         </div>
       {{/each}}
     {{else}}

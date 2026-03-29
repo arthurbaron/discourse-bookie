@@ -76,6 +76,28 @@ function formatDate(iso) {
   });
 }
 
+function formatDateTimeLocal(iso) {
+  if (!iso) return "";
+
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (value) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate()
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function localDateTimeToIso(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date.toISOString();
+}
+
 export default class BookieController extends Controller {
   @service currentUser;
 
@@ -107,6 +129,17 @@ export default class BookieController extends Controller {
   @tracked nmOddsDraw = "3.50";
   @tracked nmOddsAway = "4.00";
   @tracked nmDeadline = "";
+  @tracked editingMatchId = null;
+  @tracked emHomeTeam = "";
+  @tracked emAwayTeam = "";
+  @tracked emTitle = "";
+  @tracked emOddsHome = "1.90";
+  @tracked emOddsDraw = "3.50";
+  @tracked emOddsAway = "4.00";
+  @tracked emDeadline = "";
+
+  browserTimeZone =
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "your local timezone";
 
   // Computed podium/rest slices (used by template)
   get leaguePodium() { return this.leagueTable.slice(0, 3); }
@@ -237,6 +270,7 @@ export default class BookieController extends Controller {
       this.adminMatches = (data.matches || []).map((m) => ({
         ...m,
         formattedDeadline: formatDate(m.deadline),
+        deadlineLocal: formatDateTimeLocal(m.deadline),
       }));
     } catch (_e) {
       this.adminError = "Failed to load matches.";
@@ -255,6 +289,12 @@ export default class BookieController extends Controller {
       return;
     }
 
+    const deadline = localDateTimeToIso(this.nmDeadline);
+    if (!deadline) {
+      this.adminError = "Please enter a valid deadline.";
+      return;
+    }
+
     const title =
       this.nmTitle || `${this.nmHomeTeam} vs ${this.nmAwayTeam}`;
 
@@ -269,14 +309,18 @@ export default class BookieController extends Controller {
             odds_home: this.nmOddsHome,
             odds_draw: this.nmOddsDraw,
             odds_away: this.nmOddsAway,
-            deadline: this.nmDeadline,
+            deadline,
           },
         },
       });
 
       const m = result.match;
       this.adminMatches = [
-        { ...m, formattedDeadline: formatDate(m.deadline) },
+        {
+          ...m,
+          formattedDeadline: formatDate(m.deadline),
+          deadlineLocal: formatDateTimeLocal(m.deadline),
+        },
         ...this.adminMatches,
       ];
 
@@ -292,6 +336,79 @@ export default class BookieController extends Controller {
     } catch (e) {
       const errors = e.jqXHR?.responseJSON?.errors;
       this.adminError = errors ? errors.join(", ") : "Failed to create match.";
+    }
+  }
+
+  @action
+  startEditingMatch(match) {
+    this.editingMatchId = match.id;
+    this.emHomeTeam = match.home_team || "";
+    this.emAwayTeam = match.away_team || "";
+    this.emTitle = match.title || "";
+    this.emOddsHome = String(match.odds_home ?? "1.90");
+    this.emOddsDraw = String(match.odds_draw ?? "3.50");
+    this.emOddsAway = String(match.odds_away ?? "4.00");
+    this.emDeadline = formatDateTimeLocal(match.deadline);
+    this.adminError = null;
+  }
+
+  @action
+  cancelEditingMatch() {
+    this.editingMatchId = null;
+    this.emHomeTeam = "";
+    this.emAwayTeam = "";
+    this.emTitle = "";
+    this.emOddsHome = "1.90";
+    this.emOddsDraw = "3.50";
+    this.emOddsAway = "4.00";
+    this.emDeadline = "";
+  }
+
+  @action
+  async saveMatch(match) {
+    if (!this.emHomeTeam || !this.emAwayTeam || !this.emDeadline) {
+      this.adminError = "Home team, away team and deadline are required.";
+      return;
+    }
+
+    const deadline = localDateTimeToIso(this.emDeadline);
+    if (!deadline) {
+      this.adminError = "Please enter a valid deadline.";
+      return;
+    }
+
+    const title = this.emTitle || `${this.emHomeTeam} vs ${this.emAwayTeam}`;
+
+    try {
+      const result = await ajax(`/admin/plugins/bookie/matches/${match.id}.json`, {
+        type: "PUT",
+        data: {
+          match: {
+            title,
+            home_team: this.emHomeTeam,
+            away_team: this.emAwayTeam,
+            odds_home: this.emOddsHome,
+            odds_draw: this.emOddsDraw,
+            odds_away: this.emOddsAway,
+            deadline,
+          },
+        },
+      });
+
+      const updated = {
+        ...result.match,
+        formattedDeadline: formatDate(result.match.deadline),
+        deadlineLocal: formatDateTimeLocal(result.match.deadline),
+      };
+
+      this.adminMatches = this.adminMatches.map((item) =>
+        item.id === match.id ? updated : item
+      );
+      this.cancelEditingMatch();
+      this.adminError = null;
+    } catch (e) {
+      const errors = e.jqXHR?.responseJSON?.errors;
+      this.adminError = errors ? errors.join(", ") : "Failed to update match.";
     }
   }
 

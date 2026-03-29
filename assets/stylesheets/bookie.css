@@ -433,6 +433,11 @@
   color: var(--primary-medium);
 }
 
+.bookie-form-help {
+  font-size: 0.78rem;
+  color: var(--primary-medium);
+}
+
 .bookie-input {
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--primary-low);
@@ -496,6 +501,25 @@
   align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
+}
+
+.bookie-admin-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.bookie-admin-edit-title {
+  grid-column: span 3;
+}
+
+.bookie-admin-edit-actions {
+  grid-column: span 3;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .bookie-settle-label {
@@ -614,6 +638,15 @@
 
   .bookie-admin-match-row {
     flex-direction: column;
+  }
+
+  .bookie-admin-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bookie-admin-edit-title,
+  .bookie-admin-edit-actions {
+    grid-column: span 1;
   }
 
   .bookie-tabs {
