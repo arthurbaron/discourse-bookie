@@ -18,9 +18,12 @@ class BookieWallet < ActiveRecord::Base
 
   # Remove coins (e.g. placing a bet)
   def debit!(amount, description, match_id: nil)
-    raise "Insufficient balance" if balance < amount
+    raise ArgumentError, "Amount must be positive" if amount.to_i <= 0
 
     with_lock do
+      reload
+      raise "Insufficient balance" if balance < amount
+
       update!(balance: balance - amount)
       BookieTransaction.create!(
         user_id:          user_id,

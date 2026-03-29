@@ -16,38 +16,45 @@ class BookieSeasonSnapshot < ActiveRecord::Base
   # Snapshot the current Richest Gooner top 3 and reset all wallets.
   # Called from AdminBookieController#end_season.
   def self.close_season!(season_key)
-    # Snapshot top 3 active wallets (only users who placed at least one bet)
-    top = BookieWallet
-      .joins("JOIN bookie_bets ON bookie_bets.user_id = bookie_wallets.user_id")
-      .joins("JOIN users ON users.id = bookie_wallets.user_id")
-      .where("users.active = true")
-      .distinct
-      .order(balance: :desc)
-      .limit(3)
-      .includes(:user)
+    transaction do
+      raise "Season #{season_key} has already been closed." if where(season_key: season_key).exists?
 
-    top.each_with_index do |wallet, i|
-      create!(
-        season_key: season_key,
-        user_id:    wallet.user_id,
-        rank:       i + 1,
-        balance:    wallet.balance
-      )
-    end
+      # Snapshot top 3 active wallets (only users who placed at least one bet)
+      top = BookieWallet
+        .joins("JOIN bookie_bets ON bookie_bets.user_id = bookie_wallets.user_id")
+        .joins("JOIN users ON users.id = bookie_wallets.user_id")
+        .where("users.active = true")
+        .distinct
+        .order(balance: :desc)
+        .limit(3)
+        .includes(:user)
 
-    # Reset every wallet to starting balance
-    starting = SiteSetting.bookie_starting_balance rescue 1000
-    BookieWallet.find_each do |wallet|
-      diff = starting - wallet.balance
-      next if diff == 0
+      top.each_with_index do |wallet, i|
+        create!(
+          season_key: season_key,
+          user_id:    wallet.user_id,
+          rank:       i + 1,
+          balance:    wallet.balance
+        )
+      end
 
-      wallet.update!(balance: starting)
-      BookieTransaction.create!(
-        user_id:          wallet.user_id,
-        transaction_type: "season_reset",
-        amount:           diff,
-        description:      "New season — balance reset to #{starting} coins"
-      )
+      # Reset every wallet to starting balance in the same transaction, so
+      # the season cannot end up half-closed if one update fails.
+      starting = SiteSetting.bookie_starting_balance rescue 1000
+      BookieWallet.find_each do |wallet|
+        wallet.with_lock do
+          diff = starting - wallet.balance
+          next if diff == 0
+
+          wallet.update!(balance: starting)
+          BookieTransaction.create!(
+            user_id:          wallet.user_id,
+            transaction_type: "season_reset",
+            amount:           diff,
+            description:      "New season — balance reset to #{starting} coins"
+          )
+        end
+      end
     end
   end
 end

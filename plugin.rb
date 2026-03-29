@@ -12,7 +12,6 @@ after_initialize do
     "app/models/bookie_wallet",
     "app/models/bookie_bet",
     "app/models/bookie_transaction",
-    "app/models/bookie_monthly_snapshot",
     "app/models/bookie_league_entry",
     "app/models/bookie_period_snapshot",
     "app/models/bookie_season_snapshot",
@@ -20,7 +19,6 @@ after_initialize do
     "app/controllers/bookie_controller",
     "app/controllers/admin_bookie_controller",
     "app/jobs/scheduled/weekly_bookie_bonus",
-    "app/jobs/scheduled/monthly_bookie_reset",
     "app/jobs/scheduled/close_bookie_period",
   ].each { |f| require_relative f }
 
