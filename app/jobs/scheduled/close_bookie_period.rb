@@ -2,7 +2,7 @@
 # On the first day of Oct / Dec / Feb / Apr / Jun it snapshots the top 3
 # of the period that just ended, so previous winners appear in Standings.
 module Jobs
-  class CloseBokiePeriod < ::Jobs::Scheduled
+  class CloseBookiePeriod < ::Jobs::Scheduled
     every 1.day
 
     def execute(args)
@@ -23,9 +23,12 @@ module Jobs
       # Idempotent — skip if already snapshotted (e.g. job re-runs)
       return if BookiePeriodSnapshot.where(period_key: closing_key).exists?
 
-      Rails.logger.info("[CloseBokiePeriod] Closing period #{closing_key}")
+      Rails.logger.info("[CloseBookiePeriod] Closing period #{closing_key}")
       BookieLeagueEntry.close_period!(closing_key)
-      Rails.logger.info("[CloseBokiePeriod] Done — top 3 snapshotted for #{closing_key}")
+      Rails.logger.info("[CloseBookiePeriod] Done — top 3 snapshotted for #{closing_key}")
     end
   end
+
+  # Backwards-compatible alias for the previous typoed class name.
+  CloseBokiePeriod = CloseBookiePeriod
 end

@@ -5,6 +5,8 @@ class BookieTransaction < ActiveRecord::Base
   TYPES = %w[
     starting_balance
     weekly_bonus
+    season_reset
+    league_points
     monthly_reset
     bet_placed
     bet_won
