@@ -38,18 +38,21 @@ class AdminBookieController < Admin::AdminController
       return render json: { error: "Cannot delete a settled match." }, status: 422
     end
 
-    # Refund pending bets
-    @match.bookie_bets.where(status: "pending").each do |bet|
-      wallet = BookieWallet.find_or_create_for_user(bet.user_id)
-      wallet.credit!(
-        bet.amount,
-        "Match cancelled: #{@match.title}",
-        match_id: @match.id,
-        type:     "bet_cancelled"
-      )
-    end
+    ActiveRecord::Base.transaction do
+      @match.with_lock do
+        @match.bookie_bets.where(status: "pending").find_each do |bet|
+          wallet = BookieWallet.find_or_create_for_user(bet.user_id)
+          wallet.credit!(
+            bet.amount,
+            "Match cancelled: #{@match.title}",
+            match_id: @match.id,
+            type:     "bet_cancelled"
+          )
+        end
 
-    @match.destroy!
+        @match.destroy!
+      end
+    end
     render json: { success: true }
   end
 
@@ -97,7 +100,8 @@ class AdminBookieController < Admin::AdminController
     BookieSeasonSnapshot.close_season!(season_key)
     render json: { success: true, season_key: season_key }
   rescue => e
-    render json: { error: e.message }, status: 500
+    log_internal_error("end_season", e)
+    render json: { error: "Could not close the season right now." }, status: 500
   end
 
   private
@@ -137,5 +141,11 @@ class AdminBookieController < Admin::AdminController
       bets_draw:    bets_by_choice["draw"] || 0,
       bets_away:    bets_by_choice["away"] || 0
     }
+  end
+
+  def log_internal_error(action, error)
+    Rails.logger.error(
+      "[discourse-bookie] #{action} failed: #{error.class}: #{error.message}"
+    )
   end
 end

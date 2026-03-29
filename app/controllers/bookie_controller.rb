@@ -134,8 +134,13 @@ class BookieController < ApplicationController
         new_balance: wallet.reload.balance
       }
     end
+  rescue ActiveRecord::RecordNotUnique
+    render_error("You already placed a bet on this match.")
+  rescue ActiveRecord::RecordInvalid => e
+    render_error(e.record.errors.full_messages.to_sentence)
   rescue => e
-    render_error(e.message)
+    log_internal_error("place_bet", e)
+    render_error("Could not place your bet right now.", 500)
   end
 
   # DELETE /bookie/bets/:id
@@ -159,7 +164,8 @@ class BookieController < ApplicationController
 
     render json: { success: true }
   rescue => e
-    render_error(e.message)
+    log_internal_error("cancel_bet", e)
+    render_error("Could not cancel your bet right now.", 500)
   end
 
   private
@@ -182,6 +188,12 @@ class BookieController < ApplicationController
 
   def render_error(msg, status = 422)
     render json: { error: msg }, status: status
+  end
+
+  def log_internal_error(action, error)
+    Rails.logger.error(
+      "[discourse-bookie] #{action} failed for user #{current_user&.id}: #{error.class}: #{error.message}"
+    )
   end
 
   def serialize_match(match, user_bet = nil)
