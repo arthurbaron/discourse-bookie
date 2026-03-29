@@ -48,7 +48,6 @@
               <span class="bookie-vs">vs</span>
               <span class="bookie-team">{{match.away_team}}</span>
             </div>
-            <div class="bookie-match-deadline">Closes: {{match.formattedDeadline}}</div>
 
             {{#if match.userBet}}
               {{! Already placed a bet }}
@@ -114,6 +113,8 @@
             {{else}}
               <div class="bookie-closed-notice">Betting closed for this match</div>
             {{/if}}
+
+            <div class="bookie-match-deadline">Closes: {{match.formattedDeadline}}</div>
 
           </div>
         {{/each}}
