@@ -53,7 +53,7 @@ class BookieController < ApplicationController
       .where("users.active = true AND (users.silenced_till IS NULL OR users.silenced_till < ?)", Time.now)
       .distinct
       .order(balance: :desc)
-      .limit(20)
+      .limit(50)
       .includes(:user)
 
     # ── League Table (current period points) ───────────────────────────────
@@ -63,7 +63,7 @@ class BookieController < ApplicationController
       .joins("JOIN users ON users.id = bookie_league_entries.user_id")
       .where("users.active = true")
       .includes(:user)
-      .limit(20)
+      .limit(50)
 
     # Previous period snapshots
     prev_period    = BookiePeriodSnapshot.previous_period_key
