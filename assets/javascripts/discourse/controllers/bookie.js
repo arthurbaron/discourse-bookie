@@ -269,6 +269,9 @@ export default class BookieController extends Controller {
       this.balance += match._userBet.amount;
       match._userBet = null;
       match._canBet = true;
+      match.selectedChoice = null;
+      match.betAmount = "";
+      match.betError = null;
     } catch (e) {
       alert(e.jqXHR?.responseJSON?.error || "Something went wrong.");
     }

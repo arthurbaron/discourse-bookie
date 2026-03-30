@@ -1,10 +1,11 @@
 module Jobs
   class WeeklyBookieBonus < ::Jobs::Scheduled
-    every 1.week
+    every 1.day
 
     def execute(args)
       bonus = SiteSetting.bookie_weekly_bonus rescue 100
       return if bonus <= 0
+      return unless Date.today.monday?
 
       week_start = Date.today.beginning_of_week.beginning_of_day
       week_end   = Date.today.end_of_week.end_of_day
