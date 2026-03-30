@@ -33,7 +33,7 @@ export default apiInitializer("0.11.1", (api) => {
           .then((data) => {
             const leagueTable  = data.league_table   || [];
             const richest      = data.richest_gooner  || [];
-            const currency     = data.currency        || "Coins";
+            const currency     = data.currency        || "coins";
             const periodLabel  = data.current_period_label || "";
 
             function renderRows(entries, valueKey, unit) {
@@ -118,7 +118,7 @@ export default apiInitializer("0.11.1", (api) => {
         ajax("/bookie/matches.json")
           .then((data) => {
             const matches = data.matches || [];
-            const currency = data.currency || "Coins";
+            const currency = data.currency || "coins";
 
             if (matches.length === 0) {
               placeholder.innerHTML =

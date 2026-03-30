@@ -77,7 +77,7 @@ Settings are available under **Admin → Settings → Plugins → Bookie**:
 | `bookie_starting_balance` | `1000` | Coins given to new members |
 | `bookie_weekly_bonus` | `100` | Coins deposited every Monday |
 | `bookie_min_bet` | `10` | Minimum bet amount |
-| `bookie_currency_name` | `Coins` | Display name for the currency |
+| `bookie_currency_name` | `coins` | Display name for the currency |
 
 ---
 

@@ -171,11 +171,12 @@ class BookieController < ApplicationController
 
   private
 
-  BOOKIE_CURRENCY_DEFAULT  = "Coins"
+  BOOKIE_CURRENCY_DEFAULT  = "coins"
   BOOKIE_MIN_BET_DEFAULT   = 10
 
   def bookie_currency
-    SiteSetting.bookie_currency_name rescue BOOKIE_CURRENCY_DEFAULT
+    currency = SiteSetting.bookie_currency_name rescue BOOKIE_CURRENCY_DEFAULT
+    currency == "Coins" ? "coins" : currency
   end
 
   def bookie_min_bet

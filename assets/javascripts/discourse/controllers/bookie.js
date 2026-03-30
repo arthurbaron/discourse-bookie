@@ -133,7 +133,7 @@ export default class BookieController extends Controller {
   @tracked matches = [];
   @tracked settledMatches = [];
   @tracked balance = 0;
-  @tracked currency = "Coins";
+  @tracked currency = "coins";
   @tracked walletTransactions = [];
   @tracked walletBalance = 0;
   // Standings state
@@ -176,7 +176,7 @@ export default class BookieController extends Controller {
   get richestRest()   { return this.richestGooner.slice(3); }
 
   setup(model) {
-    const currency = model.currency || "Coins";
+    const currency = model.currency || "coins";
     this.matches = (model.matches || []).map((m) => new MatchState({ ...m, currency }));
     this.settledMatches = (model.settled_matches || []).map(
       (m) => new MatchState({ ...m, currency })
@@ -460,10 +460,14 @@ export default class BookieController extends Controller {
 
       // Refresh user-facing data
       const freshData = await ajax("/bookie/matches.json");
+      const currency = freshData.currency || this.currency || "coins";
       this.balance = freshData.balance;
-      this.matches = (freshData.matches || []).map((m) => new MatchState(m));
+      this.currency = currency;
+      this.matches = (freshData.matches || []).map(
+        (m) => new MatchState({ ...m, currency })
+      );
       this.settledMatches = (freshData.settled_matches || []).map(
-        (m) => new MatchState(m)
+        (m) => new MatchState({ ...m, currency })
       );
     } catch (e) {
       alert(e.jqXHR?.responseJSON?.error || "Failed to settle match.");

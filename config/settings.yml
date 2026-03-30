@@ -16,6 +16,6 @@ bookie_min_bet:
   type: integer
 
 bookie_currency_name:
-  default: "Coins"
+  default: "coins"
   client: true
   type: string
