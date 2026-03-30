@@ -20,10 +20,11 @@ class BookieController < ApplicationController
     settled_bets = BookieBet
       .where(user_id: current_user.id, match_id: settled_ids)
       .index_by(&:match_id)
+    settled_points = settled_match_points_for(current_user.id, settled_ids)
 
     render json: {
       matches:         open_matches.map { |m| serialize_match(m, user_bets[m.id]) },
-      settled_matches: settled.map { |m| serialize_match(m, settled_bets[m.id]) },
+      settled_matches: settled.map { |m| serialize_match(m, settled_bets[m.id], settled_points[m.id]) },
       balance:         wallet.balance,
       currency:        bookie_currency
     }
@@ -196,7 +197,58 @@ class BookieController < ApplicationController
     )
   end
 
-  def serialize_match(match, user_bet = nil)
+  def settled_match_points_for(user_id, match_ids)
+    direct_points = BookieTransaction
+      .where(user_id: user_id, transaction_type: "league_points", match_id: match_ids)
+      .pluck(:match_id, :amount)
+      .to_h
+
+    missing_match_ids = match_ids - direct_points.keys
+    return direct_points if missing_match_ids.empty?
+
+    direct_points.merge(reconstructed_match_points_for(user_id, missing_match_ids))
+  end
+
+  def reconstructed_match_points_for(user_id, target_match_ids)
+    target_ids = target_match_ids.each_with_object({}) { |match_id, memo| memo[match_id] = true }
+    points_by_match = {}
+    streak_by_period = Hash.new(0)
+
+    settled_bets = BookieBet
+      .joins(:bookie_match)
+      .where(user_id: user_id, status: %w[won lost])
+      .where(bookie_matches: { status: "settled" })
+      .select("bookie_bets.id, bookie_bets.match_id, bookie_bets.status, bookie_bets.odds, bookie_matches.updated_at AS settled_at")
+      .order("bookie_matches.updated_at ASC, bookie_bets.id ASC")
+
+    settled_bets.each do |bet|
+      settled_at = bet.attributes["settled_at"] || bet.updated_at
+      period_key = BookieLeagueEntry.period_for(settled_at.to_date)
+      next unless period_key
+
+      won = bet.status == "won"
+      streak = streak_by_period[period_key]
+      pts = 2
+
+      if won
+        streak += 1
+        pts += 10
+        pts += [(bet.odds.to_f - 1) * 4, 0].max.round
+        pts += 8  if streak == 3
+        pts += 18 if streak == 5
+        pts += 35 if streak == 8
+      else
+        streak = 0
+      end
+
+      streak_by_period[period_key] = streak
+      points_by_match[bet.match_id] = pts if target_ids.key?(bet.match_id)
+    end
+
+    points_by_match
+  end
+
+  def serialize_match(match, user_bet = nil, points_amount = nil)
     {
       id:         match.id,
       title:      match.title,
@@ -209,7 +261,8 @@ class BookieController < ApplicationController
       status:     match.status,
       result:     match.result,
       can_bet:    match.can_bet?,
-      user_bet:   user_bet ? serialize_bet(user_bet) : nil
+      user_bet:   user_bet ? serialize_bet(user_bet) : nil,
+      league_points: points_amount
     }
   end
 

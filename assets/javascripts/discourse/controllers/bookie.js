@@ -65,6 +65,34 @@ class MatchState {
     if (!this._userBet) return "";
     return `bet-status-${this._userBet.status}`;
   }
+
+  get hasLeaguePoints() {
+    return Number.isInteger(this.league_points);
+  }
+
+  get coinDeltaClass() {
+    return this._userBet?.status === "won" ? "bet-status-won" : "bet-status-lost";
+  }
+
+  get coinDeltaText() {
+    if (!this._userBet) return "";
+    if (this._userBet.status === "won") {
+      return `+${this._userBet.payout} ${this.currency}`;
+    }
+
+    return `-${this._userBet.amount} ${this.currency}`;
+  }
+
+  get pointsDeltaClass() {
+    return "bookie-result-points";
+  }
+
+  get pointsDeltaText() {
+    if (!this.hasLeaguePoints) return "";
+
+    const prefix = this.league_points > 0 ? "+" : "";
+    return `${prefix}${this.league_points} pts`;
+  }
 }
 
 function formatDate(iso) {
@@ -148,12 +176,13 @@ export default class BookieController extends Controller {
   get richestRest()   { return this.richestGooner.slice(3); }
 
   setup(model) {
-    this.matches = (model.matches || []).map((m) => new MatchState(m));
+    const currency = model.currency || "Coins";
+    this.matches = (model.matches || []).map((m) => new MatchState({ ...m, currency }));
     this.settledMatches = (model.settled_matches || []).map(
-      (m) => new MatchState(m)
+      (m) => new MatchState({ ...m, currency })
     );
     this.balance = model.balance || 0;
-    this.currency = model.currency || "Coins";
+    this.currency = currency;
     this.walletBalance = model.wallet?.balance || 0;
     this.walletTransactions = (model.wallet?.transactions || []).map((tx) => ({
       ...tx,

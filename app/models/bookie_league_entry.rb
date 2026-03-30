@@ -46,7 +46,7 @@ class BookieLeagueEntry < ActiveRecord::Base
   # ── Points calculation ────────────────────────────────────────────────────
 
   # Called when a bet is settled (won or lost)
-  def self.record_settled_bet!(user_id:, won:, odds:)
+  def self.record_settled_bet!(user_id:, won:, odds:, match_id: nil)
     period_key = current_period_key
     return unless period_key  # outside season (e.g. June/July)
 
@@ -84,7 +84,8 @@ class BookieLeagueEntry < ActiveRecord::Base
         user_id:          user_id,
         transaction_type: "league_points",
         amount:           pts,
-        description:      won ? "League pts: correct pick (#{pts} pts)" : "League pts: activity bonus (#{pts} pts)"
+        description:      won ? "League pts: correct pick (#{pts} pts)" : "League pts: activity bonus (#{pts} pts)",
+        match_id:         match_id
       )
     end
   end

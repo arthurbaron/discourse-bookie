@@ -61,7 +61,8 @@ class BookieMatch < ActiveRecord::Base
         BookieLeagueEntry.record_settled_bet!(
           user_id: bet.user_id,
           won:     won,
-          odds:    bet.odds
+          odds:    bet.odds,
+          match_id: id
         )
       end
     end

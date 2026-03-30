@@ -143,11 +143,15 @@
               {{match.resultText}}
             </div>
             {{#if match.userBet}}
-              <div class="bookie-result-mybet {{match.userBetResultClass}}">
-                {{#if (eq match.userBet.status "won")}}
-                  🏆 Won {{match.userBet.payout}} {{this.currency}}
-                {{else}}
-                  Lost ({{match.userBet.amount}} {{this.currency}})
+              <div class="bookie-result-summary">
+                <div class="bookie-result-score {{match.coinDeltaClass}}">
+                  {{match.coinDeltaText}}
+                </div>
+                {{#if match.hasLeaguePoints}}
+                  <div class="bookie-result-score-divider"></div>
+                  <div class="bookie-result-score {{match.pointsDeltaClass}}">
+                    {{match.pointsDeltaText}}
+                  </div>
                 {{/if}}
               </div>
             {{/if}}

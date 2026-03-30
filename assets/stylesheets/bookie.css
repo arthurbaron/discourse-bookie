@@ -313,31 +313,55 @@
 .bookie-result-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
-  padding: 0.75rem;
+  padding: 0.75rem 1.5rem;
   background: var(--secondary);
   border: 1px solid var(--primary-low);
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .bookie-result-teams {
+  font-size: 1.12rem;
   font-weight: 600;
   flex: 1;
-  min-width: 150px;
+  min-width: 200px;
 }
 
 .bookie-result-outcome {
-  padding: 0.25rem 0.6rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
   font-weight: 600;
   background: var(--primary-low);
+  line-height: 1;
 }
 
-.bookie-result-mybet {
-  font-size: 0.85rem;
+.bookie-result-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-left: auto;
+  flex-wrap: nowrap;
+}
+
+.bookie-result-score {
+  font-size: 0.92rem;
   font-weight: 600;
+  line-height: 1.375;
+  white-space: nowrap;
+}
+
+.bookie-result-score-divider {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--primary-medium);
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+.bookie-result-points {
+  color: var(--primary);
 }
 
 .bet-status-won  { color: var(--success); }
@@ -693,6 +717,21 @@
 
   .bookie-odds-form-row {
     flex-direction: column;
+  }
+
+  .bookie-result-row {
+    align-items: flex-start;
+  }
+
+  .bookie-result-outcome {
+    order: 2;
+  }
+
+  .bookie-result-summary {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
   }
 }
 
