@@ -11,7 +11,7 @@ A virtual betting plugin for [Discourse](https://www.discourse.org/). Members be
   - 🏆 **League Table** — points-based, resets every two months; rewards picking accuracy and hot streaks
   - 💰 **Richest Gooner** — season-long coin ranking; rewards smart bankroll management
 - **Weekly coin bonus** — 100 coins deposited every Monday to keep members active
-- **Streak bonuses** — consecutive correct picks earn milestone rewards (+5 / +10 / +20)
+- **Streak bonuses** — consecutive correct picks earn milestone rewards (+8 / +18 / +35)
 - **Odds bonus** — longer shots earn extra League Table points when correct
 - **BBCode widget** — embed live standings in any post with `[bookie-leaderboard]`
 - **Podium UI** — gold/silver/bronze top-3 display with full table below
