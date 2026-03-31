@@ -262,6 +262,42 @@
       {{else}}
         <div class="bookie-empty">No points yet this period — place your first bet!</div>
       {{/if}}
+
+      {{! ── Previous periods ── }}
+      {{#if this.periodHistory.length}}
+        <div class="bookie-prev-period">
+          <h3 class="bookie-prev-period-title">Previous periods</h3>
+
+          {{! Period selector pills }}
+          <div class="bookie-period-selector">
+            {{#each this.periodHistory as |period|}}
+              <button
+                class="bookie-period-pill-btn {{if (eq this.effectivePeriodKey period.period_key) 'active'}}"
+                {{on "click" (fn this.selectPeriod period.period_key)}}>
+                {{period.label}}
+              </button>
+            {{/each}}
+          </div>
+
+          {{! Top 3 for selected period }}
+          {{#if this.selectedPeriod}}
+            <div class="bookie-prev-period-list">
+              {{#each this.selectedPeriod.top3 as |entry|}}
+                <div class="bookie-prev-period-row">
+                  <span class="bookie-prev-medal">
+                    {{#if (eq entry.rank 1)}}🥇{{else if (eq entry.rank 2)}}🥈{{else}}🥉{{/if}}
+                  </span>
+                  <span class="bookie-prev-name">
+                    <a href="/u/{{entry.username}}">{{entry.username}}</a>
+                  </span>
+                  <span class="bookie-prev-pts">{{entry.points}} pts</span>
+                </div>
+              {{/each}}
+            </div>
+          {{/if}}
+        </div>
+      {{/if}}
+
     </div>
     {{/if}}
 

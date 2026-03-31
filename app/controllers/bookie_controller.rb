@@ -66,9 +66,26 @@ class BookieController < ApplicationController
       .includes(:user)
       .limit(50)
 
-    # Previous period snapshots
-    prev_period    = BookiePeriodSnapshot.previous_period_key
-    league_prev    = BookiePeriodSnapshot.for_period(prev_period).includes(:user).limit(3)
+    # All period snapshots (excluding current period), grouped and sorted newest first
+    all_snapshots = BookiePeriodSnapshot
+      .includes(:user)
+      .where.not(period_key: current_period)
+      .order(period_key: :desc, rank: :asc)
+
+    period_history = all_snapshots
+      .group_by(&:period_key)
+      .map do |key, entries|
+        {
+          period_key: key,
+          label:      BookieLeagueEntry.period_label_for(key),
+          top3:       entries.first(3).map do |s|
+            { rank: s.rank, username: s.user.username, points: s.points,
+              avatar_template: s.user.avatar_template }
+          end
+        }
+      end
+      .sort_by { |p| p[:period_key] }
+      .reverse
 
     render json: {
       # Richest Gooner
@@ -88,12 +105,9 @@ class BookieController < ApplicationController
       # Meta
       current_period_key:   current_period,
       current_period_label: BookieLeagueEntry.period_label_for(current_period.to_s),
-      prev_period_key:      prev_period,
-      prev_period_label:    prev_period ? BookieLeagueEntry.period_label_for(prev_period) : nil,
-      prev_period_top3:     league_prev.map do |s|
-        { rank: s.rank, username: s.user.username, points: s.points,
-          avatar_template: s.user.avatar_template }
-      end,
+
+      # History: all past periods with their top 3 (newest first)
+      period_history: period_history,
 
       currency: bookie_currency
     }

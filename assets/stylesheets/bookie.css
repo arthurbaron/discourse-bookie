@@ -413,6 +413,92 @@
   min-width: 260px;
 }
 
+/* ── Previous period ──────────────────────────────────── */
+
+.bookie-prev-period {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--primary-low);
+}
+
+.bookie-prev-period-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary-medium);
+  margin: 0 0 0.75rem;
+}
+
+/* ── Period selector pills ── */
+.bookie-period-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.bookie-period-pill-btn {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--primary-low);
+  background: var(--secondary);
+  color: var(--primary-medium);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+
+.bookie-period-pill-btn:hover {
+  background: var(--primary-low);
+  color: var(--primary);
+  border-color: var(--primary-low-mid);
+}
+
+.bookie-period-pill-btn.active {
+  background: var(--tertiary);
+  color: var(--secondary);
+  border-color: var(--tertiary);
+}
+
+.bookie-prev-period-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.bookie-prev-period-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.75rem;
+  background: var(--primary-low);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+.bookie-prev-medal {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.bookie-prev-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.bookie-prev-pts {
+  color: var(--primary-medium);
+  font-size: 0.82rem;
+}
+
+/* ── Leaderboard table ────────────────────────────────── */
+
 .bookie-lb-table {
   width: 100%;
   border-collapse: collapse;

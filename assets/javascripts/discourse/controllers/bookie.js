@@ -142,8 +142,8 @@ export default class BookieController extends Controller {
   @tracked leagueTable = [];
   @tracked richestGooner = [];
   @tracked currentPeriodLabel = "";
-  @tracked prevPeriodLabel = null;
-  @tracked prevPeriodTop3 = [];
+  @tracked periodHistory = [];       // [{period_key, label, top3}] newest first
+  @tracked selectedPeriodKey = null; // null = auto-select most recent
 
   // Admin state
   @tracked adminMatches = [];
@@ -190,11 +190,25 @@ export default class BookieController extends Controller {
       formattedDate: formatDate(tx.date),
     }));
     const lb = model.leaderboard || {};
-    this.leagueTable       = lb.league_table      || [];
-    this.richestGooner     = lb.richest_gooner     || [];
+    this.leagueTable        = lb.league_table       || [];
+    this.richestGooner      = lb.richest_gooner      || [];
     this.currentPeriodLabel = lb.current_period_label || "";
-    this.prevPeriodLabel   = lb.prev_period_label  || null;
-    this.prevPeriodTop3    = lb.prev_period_top3   || [];
+    this.periodHistory      = lb.period_history      || [];
+    this.selectedPeriodKey  = null; // reset to most-recent on load
+  }
+
+  // The currently displayed historical period object
+  get selectedPeriod() {
+    if (!this.periodHistory.length) return null;
+    const match = this.periodHistory.find(
+      (p) => p.period_key === this.selectedPeriodKey
+    );
+    return match || this.periodHistory[0];
+  }
+
+  // The effective key (for active-pill highlighting when selectedPeriodKey is null)
+  get effectivePeriodKey() {
+    return this.selectedPeriod?.period_key ?? null;
   }
 
   // ── Tab navigation ──────────────────────────────────
@@ -202,6 +216,11 @@ export default class BookieController extends Controller {
   @action
   setStandingsTab(tab) {
     this.standingsTab = tab;
+  }
+
+  @action
+  selectPeriod(key) {
+    this.selectedPeriodKey = key;
   }
 
   @action
