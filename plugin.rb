@@ -5,6 +5,7 @@
 # url: https://github.com/arthurbaron/discourse-bookie
 
 register_asset "stylesheets/bookie.css"
+register_svg_icon "trophy"
 
 after_initialize do
   [
@@ -12,6 +13,7 @@ after_initialize do
     "app/models/bookie_wallet",
     "app/models/bookie_bet",
     "app/models/bookie_transaction",
+    "app/services/bookie_notifier",
     "app/models/bookie_league_entry",
     "app/models/bookie_period_snapshot",
     "app/models/bookie_season_snapshot",

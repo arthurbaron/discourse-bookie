@@ -38,6 +38,8 @@ class BookieMatch < ActiveRecord::Base
 
     ActiveRecord::Base.transaction do
       update!(result: result_choice, status: "settled")
+      currency_name = SiteSetting.bookie_currency_name rescue "coins"
+      currency_name = "coins" if currency_name == "Coins"
 
       bookie_bets.where(status: "pending").each do |bet|
         won = bet.choice == result_choice
@@ -63,6 +65,13 @@ class BookieMatch < ActiveRecord::Base
           won:     won,
           odds:    bet.odds,
           match_id: id
+        )
+
+        BookieNotifier.notify_match_settled!(
+          match: self,
+          bet: bet,
+          won: won,
+          currency_name: currency_name
         )
       end
     end

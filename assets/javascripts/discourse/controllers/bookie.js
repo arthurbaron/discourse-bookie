@@ -128,6 +128,7 @@ function localDateTimeToIso(value) {
 
 export default class BookieController extends Controller {
   @service currentUser;
+  queryParams = [{ activeTab: "tab" }];
 
   @tracked activeTab = "matches";
   @tracked matches = [];

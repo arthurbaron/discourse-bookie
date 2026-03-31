@@ -17,6 +17,7 @@ class AdminBookieController < Admin::AdminController
     match = BookieMatch.new(match_params)
 
     if match.save
+      BookieNotifier.notify_new_match_available!(match: match)
       render json: { match: serialize_match(match) }
     else
       render json: { errors: match.errors.full_messages }, status: 422

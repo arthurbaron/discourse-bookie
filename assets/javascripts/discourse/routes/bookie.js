@@ -2,6 +2,10 @@ import DiscourseRoute from "discourse/routes/discourse";
 import { ajax } from "discourse/lib/ajax";
 
 export default class BookieRoute extends DiscourseRoute {
+  queryParams = {
+    tab: { refreshModel: false },
+  };
+
   async model() {
     const [matchesData, walletData, leaderboardData] = await Promise.all([
       ajax("/bookie/matches.json"),
