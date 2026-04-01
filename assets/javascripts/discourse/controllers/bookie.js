@@ -158,6 +158,9 @@ export default class BookieController extends Controller {
   @tracked nmOddsDraw = "3.50";
   @tracked nmOddsAway = "4.00";
   @tracked nmDeadline = "";
+  @tracked grantAllAmount = "";
+  @tracked grantAllReason = "";
+  @tracked grantAllLoading = false;
   @tracked editingMatchId = null;
   @tracked emHomeTeam = "";
   @tracked emAwayTeam = "";
@@ -388,6 +391,61 @@ export default class BookieController extends Controller {
     } catch (e) {
       const errors = e.jqXHR?.responseJSON?.errors;
       this.adminError = errors ? errors.join(", ") : "Failed to create match.";
+    }
+  }
+
+  @action
+  async grantAllPlayers() {
+    const amount = parseInt(this.grantAllAmount, 10);
+
+    if (Number.isNaN(amount) || amount <= 0) {
+      this.adminError = "Please enter a valid coin amount greater than 0.";
+      return;
+    }
+
+    const reason = this.grantAllReason.trim();
+    const confirmMessage =
+      `Give ${amount} ${this.currency} to all Bookie players?` +
+      (reason ? `\n\nReason: ${reason}` : "") +
+      `\n\nThis will credit every existing Bookie wallet.`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    this.grantAllLoading = true;
+
+    try {
+      const result = await ajax("/admin/plugins/bookie/grant-all.json", {
+        type: "POST",
+        data: {
+          amount,
+          reason,
+        },
+      });
+
+      this.grantAllAmount = "";
+      this.grantAllReason = "";
+      this.adminError = null;
+
+      const walletData = await ajax("/bookie/wallet.json");
+      this.balance = walletData.balance;
+      this.walletBalance = walletData.balance;
+      this.currency = walletData.currency || this.currency || "coins";
+      this.walletTransactions = (walletData.transactions || []).map((tx) => ({
+        ...tx,
+        formattedDate: formatDate(tx.date),
+        isPositive: tx.amount > 0,
+      }));
+
+      alert(
+        `Granted ${result.amount} ${this.currency} to ${result.granted_count} Bookie players.`
+      );
+    } catch (e) {
+      this.adminError =
+        e.jqXHR?.responseJSON?.error || "Failed to grant coins to all players.";
+    } finally {
+      this.grantAllLoading = false;
     }
   }
 

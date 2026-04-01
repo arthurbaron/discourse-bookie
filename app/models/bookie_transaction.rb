@@ -12,6 +12,7 @@ class BookieTransaction < ActiveRecord::Base
     bet_won
     bet_lost
     bet_cancelled
+    admin_grant_all
   ].freeze
 
   validates :user_id, :transaction_type, :amount, presence: true

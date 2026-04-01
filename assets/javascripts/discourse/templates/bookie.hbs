@@ -650,6 +650,49 @@
       <div class="bookie-empty">No open matches to manage.</div>
     {{/if}}
 
+    <div class="bookie-season-section">
+      <h2 class="bookie-section-title">Admin tools</h2>
+      <div class="bookie-season-card">
+        <div class="bookie-season-info">
+          <span class="bookie-season-label">Bulk grant</span>
+          <span class="bookie-season-key">All players</span>
+        </div>
+        <p class="bookie-season-desc">
+          Give every existing Bookie player the same amount of {{this.currency}}.
+          Useful for compensation, resets or one-off boosts across the whole game.
+        </p>
+        <div class="bookie-admin-form bookie-admin-form-compact">
+          <div class="bookie-form-row">
+            <label>Coins to grant</label>
+            <input class="bookie-input" type="number" min="1" step="1"
+                   value={{this.grantAllAmount}} placeholder="e.g. 100"
+                   {{on "input" (fn this.updateField "grantAllAmount")}} />
+          </div>
+          <div class="bookie-form-row">
+            <label>Reason (optional)</label>
+            <input class="bookie-input" type="text"
+                   value={{this.grantAllReason}} placeholder="e.g. Goodwill bonus after a bug"
+                   {{on "input" (fn this.updateField "grantAllReason")}} />
+            <span class="bookie-form-help">
+              This reason will be saved in every player's wallet log.
+            </span>
+          </div>
+          {{#if this.adminError}}
+            <div class="bookie-error">{{this.adminError}}</div>
+          {{/if}}
+          <button class="btn btn-primary"
+                  disabled={{this.grantAllLoading}}
+                  {{on "click" this.grantAllPlayers}}>
+            {{#if this.grantAllLoading}}
+              Granting coins…
+            {{else}}
+              Grant coins to all players
+            {{/if}}
+          </button>
+        </div>
+      </div>
+    </div>
+
     {{! ── Season management ── }}
     <div class="bookie-season-section">
       <h2 class="bookie-section-title">Season management</h2>

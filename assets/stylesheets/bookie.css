@@ -546,6 +546,12 @@
   margin-bottom: 1.5rem;
 }
 
+.bookie-admin-form-compact {
+  margin-bottom: 0;
+  padding: 0;
+  background: transparent;
+}
+
 .bookie-form-row {
   display: flex;
   flex-direction: column;

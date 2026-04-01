@@ -24,6 +24,46 @@ class AdminBookieController < Admin::AdminController
     end
   end
 
+  # POST /admin/plugins/bookie/grant-all
+  def grant_all
+    amount = params[:amount].to_i
+    reason = params[:reason].to_s.strip
+
+    if amount <= 0
+      return render json: { error: "Amount must be greater than 0." }, status: 422
+    end
+
+    wallets = BookieWallet.all
+    if wallets.none?
+      return render json: { error: "No Bookie players found yet." }, status: 422
+    end
+
+    description =
+      if reason.present?
+        "Admin grant: #{reason}"
+      else
+        "Admin grant to all Bookie players"
+      end
+
+    granted_count = 0
+
+    ActiveRecord::Base.transaction do
+      wallets.find_each do |wallet|
+        wallet.credit!(
+          amount,
+          description,
+          type: "admin_grant_all"
+        )
+        granted_count += 1
+      end
+    end
+
+    render json: { success: true, granted_count: granted_count, amount: amount }
+  rescue => e
+    log_internal_error("grant_all", e)
+    render json: { error: "Could not grant coins right now." }, status: 500
+  end
+
   # PUT /admin/plugins/bookie/matches/:id
   def update_match
     if @match.update(match_params)

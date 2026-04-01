@@ -40,6 +40,7 @@ after_initialize do
     scope "/admin/plugins/bookie", constraints: StaffConstraint.new do
       get    "/matches"            => "admin_bookie#matches"
       post   "/matches"            => "admin_bookie#create_match"
+      post   "/grant-all"          => "admin_bookie#grant_all"
       put    "/matches/:id"        => "admin_bookie#update_match"
       delete "/matches/:id"        => "admin_bookie#destroy_match"
       post   "/matches/:id/settle" => "admin_bookie#settle_match"
