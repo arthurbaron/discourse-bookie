@@ -613,11 +613,25 @@
   border-radius: 8px;
 }
 
+.bookie-admin-card-layout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .bookie-admin-match-info {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.22rem;
   flex: 1;
+  min-width: 0;
+}
+
+.bookie-admin-match-title {
+  font-size: 0.98rem;
+  line-height: 1.35;
 }
 
 .bookie-admin-odds,
@@ -625,13 +639,85 @@
 .bookie-admin-deadline {
   font-size: 0.8rem;
   color: var(--primary-medium);
+  line-height: 1.35;
+}
+
+.bookie-admin-card-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.bookie-admin-icon-btn {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary-low);
+  color: var(--primary-high);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bookie-admin-icon-btn:hover {
+  background: var(--primary-low-mid);
+  color: var(--primary);
+}
+
+.bookie-admin-controls-separator {
+  width: 1px;
+  height: 32px;
+  background: var(--primary-low);
 }
 
 .bookie-admin-actions {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.bookie-admin-settle-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bookie-admin-settle-btn {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.bookie-admin-settle-btn:hover {
+  filter: brightness(1.04);
+}
+
+.bookie-admin-settle-btn:active {
+  transform: translateY(1px);
+}
+
+.bookie-admin-settle-btn-home {
+  background: #36c36f;
+  color: #111;
+}
+
+.bookie-admin-settle-btn-draw {
+  background: #b0b3b8;
+  color: #111;
+}
+
+.bookie-admin-settle-btn-away {
+  background: #e57a3d;
+  color: #111;
 }
 
 .bookie-admin-edit-grid {
@@ -656,11 +742,6 @@
 .bookie-settle-label {
   font-size: 0.82rem;
   color: var(--primary-medium);
-}
-
-.bookie-delete-btn {
-  color: var(--danger) !important;
-  margin-left: 0.5rem;
 }
 
 /* ── [bookie] widget in posts ─────────────────────────── */
@@ -774,6 +855,56 @@
 
   .bookie-admin-match-row {
     flex-direction: column;
+  }
+
+  .bookie-admin-card-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px;
+    grid-template-areas:
+      "info edit"
+      "actions actions";
+    align-items: start;
+    gap: 0.75rem;
+    padding-right: 0;
+  }
+
+  .bookie-admin-card-controls {
+    display: contents;
+    width: auto;
+  }
+
+  .bookie-admin-match-info {
+    grid-area: info;
+  }
+
+  .bookie-admin-icon-btn {
+    position: static;
+    grid-area: edit;
+    justify-self: end;
+    align-self: start;
+  }
+
+  .bookie-admin-controls-separator {
+    display: none;
+  }
+
+  .bookie-admin-actions {
+    grid-area: actions;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .bookie-admin-settle-buttons {
+    width: 100%;
+    gap: 0.45rem;
+  }
+
+  .bookie-admin-settle-btn {
+    flex: 1 1 0;
+    padding: 0 10px;
+    font-size: 0.82rem;
   }
 
   .bookie-admin-edit-grid {

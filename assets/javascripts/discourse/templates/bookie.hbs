@@ -598,6 +598,10 @@
                 </span>
               </div>
               <div class="bookie-admin-edit-actions">
+                <button class="btn btn-small btn-danger"
+                        {{on "click" (fn this.deleteMatch match)}}>
+                  Delete match
+                </button>
                 <button class="btn btn-primary btn-small"
                         {{on "click" (fn this.saveMatch match)}}>
                   Save changes
@@ -609,39 +613,47 @@
               </div>
             </div>
           {{else}}
-            <div class="bookie-admin-match-info">
-              <strong>{{match.title}}</strong>
-              <span class="bookie-admin-odds">
-                Home {{match.odds_home}} · Draw {{match.odds_draw}} · Away {{match.odds_away}}
-              </span>
-              <span class="bookie-admin-stats">
-                {{match.total_bets}} bets · {{match.total_coins}} coins
-                &nbsp;(🏠 {{match.bets_home}} · ➡️ {{match.bets_draw}} · ✈️ {{match.bets_away}})
-              </span>
-              <span class="bookie-admin-deadline">Deadline: {{match.formattedDeadline}}</span>
-            </div>
-            <div class="bookie-admin-actions">
-              <button class="btn btn-small"
-                      {{on "click" (fn this.startEditingMatch match)}}>
-                Edit
-              </button>
-              <span class="bookie-settle-label">Settle as:</span>
-              <button class="btn btn-small btn-success"
-                      {{on "click" (fn this.settleMatch match "home")}}>
-                Home wins
-              </button>
-              <button class="btn btn-small"
-                      {{on "click" (fn this.settleMatch match "draw")}}>
-                Draw
-              </button>
-              <button class="btn btn-small btn-danger"
-                      {{on "click" (fn this.settleMatch match "away")}}>
-                Away wins
-              </button>
-              <button class="btn btn-small btn-flat bookie-delete-btn"
-                      {{on "click" (fn this.deleteMatch match)}}>
-                {{d-icon "trash-alt"}}
-              </button>
+            <div class="bookie-admin-card-layout">
+              <div class="bookie-admin-match-info">
+                <strong class="bookie-admin-match-title">{{match.title}}</strong>
+                <span class="bookie-admin-odds">
+                  Home {{match.odds_home}} · Draw {{match.odds_draw}} · Away {{match.odds_away}}
+                </span>
+                <span class="bookie-admin-stats">
+                  {{match.total_bets}} bets · {{match.total_coins}} {{this.currency}}
+                  &nbsp;(🏠 {{match.bets_home}} · ➡️ {{match.bets_draw}} · ✈️ {{match.bets_away}})
+                </span>
+                <span class="bookie-admin-deadline">Deadline: {{match.formattedDeadline}}</span>
+              </div>
+
+              <div class="bookie-admin-card-controls">
+                <button class="bookie-admin-icon-btn"
+                        type="button"
+                        title="Edit match"
+                        {{on "click" (fn this.startEditingMatch match)}}>
+                  {{d-icon "pencil-alt"}}
+                </button>
+
+                <div class="bookie-admin-controls-separator"></div>
+
+                <div class="bookie-admin-actions">
+                  <span class="bookie-settle-label">Settle as:</span>
+                  <div class="bookie-admin-settle-buttons">
+                    <button class="bookie-admin-settle-btn bookie-admin-settle-btn-home"
+                            {{on "click" (fn this.settleMatch match "home")}}>
+                      Home wins
+                    </button>
+                    <button class="bookie-admin-settle-btn bookie-admin-settle-btn-draw"
+                            {{on "click" (fn this.settleMatch match "draw")}}>
+                      Draw
+                    </button>
+                    <button class="bookie-admin-settle-btn bookie-admin-settle-btn-away"
+                            {{on "click" (fn this.settleMatch match "away")}}>
+                      Away wins
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           {{/if}}
         </div>
