@@ -600,6 +600,47 @@
 
 /* Admin match list */
 
+.bookie-admin-subtabs {
+  margin-bottom: 20px;
+}
+
+.bookie-admin-panel .bookie-admin-subtab {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--primary-medium);
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 400;
+  line-height: normal;
+  margin: 0 0 -2px;
+  padding: 8px 20px;
+  text-shadow: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.bookie-admin-panel .bookie-admin-subtab:focus,
+.bookie-admin-panel .bookie-admin-subtab:active {
+  background: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.bookie-admin-panel .bookie-admin-subtab:hover {
+  background: none;
+  color: var(--primary);
+}
+
+.bookie-admin-panel .bookie-admin-subtab.active {
+  color: var(--tertiary);
+  border-bottom-color: var(--tertiary);
+  font-weight: 600;
+}
+
 .bookie-admin-match-row {
   display: flex;
   align-items: flex-start;
@@ -652,20 +693,22 @@
 .bookie-admin-icon-btn {
   width: 42px;
   height: 42px;
-  border: 0;
+  border: 1px solid var(--primary-low-mid, var(--primary-low)) !important;
   border-radius: 8px;
-  background: var(--primary-low);
-  color: var(--primary-high);
+  background: transparent !important;
+  color: var(--primary-medium) !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .bookie-admin-icon-btn:hover {
-  background: var(--primary-low-mid);
-  color: var(--primary);
+  background: var(--primary-very-low) !important;
+  border-color: var(--primary-medium) !important;
+  color: var(--primary) !important;
 }
 
 .bookie-admin-controls-separator {
@@ -686,22 +729,23 @@
   gap: 0.5rem;
 }
 
-.bookie-admin-settle-btn {
+.bookie-admin-panel button.bookie-admin-settle-btn {
   min-height: 42px;
   padding: 0 14px;
-  border: 0;
-  border-radius: 8px;
+  border: 0 !important;
+  border-radius: 2px !important;
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 400 !important;
+  box-shadow: none !important;
   cursor: pointer;
   transition: transform 0.12s ease, filter 0.15s ease;
 }
 
-.bookie-admin-settle-btn:hover {
+.bookie-admin-panel button.bookie-admin-settle-btn:hover {
   filter: brightness(1.04);
 }
 
-.bookie-admin-settle-btn:active {
+.bookie-admin-panel button.bookie-admin-settle-btn:active {
   transform: translateY(1px);
 }
 
@@ -857,6 +901,23 @@
     flex-direction: column;
   }
 
+  .bookie-admin-subtabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .bookie-admin-subtabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bookie-admin-panel .bookie-admin-subtab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
   .bookie-admin-card-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 42px;
@@ -901,7 +962,7 @@
     gap: 0.45rem;
   }
 
-  .bookie-admin-settle-btn {
+  .bookie-admin-panel button.bookie-admin-settle-btn {
     flex: 1 1 0;
     padding: 0 10px;
     font-size: 0.82rem;
@@ -1542,6 +1603,12 @@
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--primary-low);
+}
+
+.bookie-admin-panel .bookie-season-section-first {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .bookie-season-card {

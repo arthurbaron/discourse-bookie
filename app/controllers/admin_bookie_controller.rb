@@ -116,6 +116,10 @@ class AdminBookieController < Admin::AdminController
   def season_status
     season_key = BookieSeasonSnapshot.current_season_key
     existing   = BookieSeasonSnapshot.where(season_key: season_key).exists?
+    closable_period_key = BookieLeagueEntry.closable_period_key
+    closable_period_closed =
+      closable_period_key.present? &&
+      BookiePeriodSnapshot.where(period_key: closable_period_key).exists?
     past       = BookieSeasonSnapshot
       .select(:season_key)
       .distinct
@@ -126,8 +130,35 @@ class AdminBookieController < Admin::AdminController
     render json: {
       current_season_key: season_key,
       already_closed:     existing,
-      past_seasons:       past
+      past_seasons:       past,
+      closable_period_key: closable_period_key,
+      closable_period_label:
+        closable_period_key ? BookieLeagueEntry.period_label_for(closable_period_key) : nil,
+      closable_period_closed: closable_period_closed
     }
+  end
+
+  # POST /admin/plugins/bookie/period/close
+  def close_period
+    period_key = params[:period_key].presence || BookieLeagueEntry.closable_period_key
+
+    if period_key.blank?
+      return render json: { error: "No finished period is ready to close." }, status: 422
+    end
+
+    if BookiePeriodSnapshot.where(period_key: period_key).exists?
+      return render json: { error: "Period #{period_key} has already been closed." }, status: 422
+    end
+
+    BookieLeagueEntry.close_period!(period_key)
+    render json: {
+      success: true,
+      period_key: period_key,
+      period_label: BookieLeagueEntry.period_label_for(period_key)
+    }
+  rescue => e
+    log_internal_error("close_period", e)
+    render json: { error: "Could not close the period right now." }, status: 500
   end
 
   # POST /admin/plugins/bookie/season/end

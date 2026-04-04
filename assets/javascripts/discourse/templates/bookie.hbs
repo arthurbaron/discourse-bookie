@@ -483,6 +483,24 @@
   {{#if (and (eq this.activeTab "admin") this.currentUser.staff)}}
   <div class="bookie-panel bookie-admin-panel">
 
+    <div class="bookie-standings-tabs bookie-admin-subtabs">
+      <button type="button"
+              class="bookie-standings-tab bookie-admin-subtab {{if (eq this.adminSubTab 'events') 'active'}}"
+              {{on "click" (fn this.setAdminSubTab "events")}}>
+        Events
+      </button>
+      <button type="button"
+              class="bookie-standings-tab bookie-admin-subtab {{if (eq this.adminSubTab 'management') 'active'}}"
+              {{on "click" (fn this.setAdminSubTab "management")}}>
+        Management
+      </button>
+    </div>
+
+    {{#if this.adminError}}
+      <div class="bookie-error">{{this.adminError}}</div>
+    {{/if}}
+
+    {{#if (eq this.adminSubTab "events")}}
     <h2>Create new match</h2>
     <div class="bookie-admin-form">
       <div class="bookie-form-row">
@@ -535,9 +553,6 @@
           Saved from your local timezone: {{this.browserTimeZone}}
         </span>
       </div>
-      {{#if this.adminError}}
-        <div class="bookie-error">{{this.adminError}}</div>
-      {{/if}}
       <button class="btn btn-primary" {{on "click" this.createMatch}}>
         Create match
       </button>
@@ -629,6 +644,7 @@
               <div class="bookie-admin-card-controls">
                 <button class="bookie-admin-icon-btn"
                         type="button"
+                        style="background: transparent; border: 1px solid var(--primary-low-mid, var(--primary-low)); border-radius: 2px; box-shadow: none; color: var(--primary-medium);"
                         title="Edit match"
                         {{on "click" (fn this.startEditingMatch match)}}>
                   {{d-icon "pencil-alt"}}
@@ -640,14 +656,17 @@
                   <span class="bookie-settle-label">Settle as:</span>
                   <div class="bookie-admin-settle-buttons">
                     <button class="bookie-admin-settle-btn bookie-admin-settle-btn-home"
+                            style="border-radius: 2px; font-weight: 400;"
                             {{on "click" (fn this.settleMatch match "home")}}>
                       Home wins
                     </button>
                     <button class="bookie-admin-settle-btn bookie-admin-settle-btn-draw"
+                            style="border-radius: 2px; font-weight: 400;"
                             {{on "click" (fn this.settleMatch match "draw")}}>
                       Draw
                     </button>
                     <button class="bookie-admin-settle-btn bookie-admin-settle-btn-away"
+                            style="border-radius: 2px; font-weight: 400;"
                             {{on "click" (fn this.settleMatch match "away")}}>
                       Away wins
                     </button>
@@ -661,8 +680,11 @@
     {{else}}
       <div class="bookie-empty">No open matches to manage.</div>
     {{/if}}
+    {{/if}}
 
-    <div class="bookie-season-section">
+    {{#if (eq this.adminSubTab "management")}}
+    <div class="bookie-season-section bookie-season-section-first"
+         style="margin-top: 0; padding-top: 0; border-top: 0;">
       <h2 class="bookie-section-title">Admin tools</h2>
       <div class="bookie-season-card">
         <div class="bookie-season-info">
@@ -689,9 +711,6 @@
               This reason will be saved in every player's wallet log.
             </span>
           </div>
-          {{#if this.adminError}}
-            <div class="bookie-error">{{this.adminError}}</div>
-          {{/if}}
           <button class="btn btn-primary"
                   disabled={{this.grantAllLoading}}
                   {{on "click" this.grantAllPlayers}}>
@@ -702,6 +721,41 @@
             {{/if}}
           </button>
         </div>
+      </div>
+    </div>
+
+    <div class="bookie-season-section">
+      <h2 class="bookie-section-title">Period management</h2>
+      <div class="bookie-season-card">
+        {{#if this.closablePeriodLabel}}
+          <div class="bookie-season-info">
+            <span class="bookie-season-label">Finished period</span>
+            <span class="bookie-season-key">{{this.closablePeriodLabel}}</span>
+          </div>
+
+          {{#if this.closablePeriodClosed}}
+            <div class="bookie-season-closed-notice">
+              ✅ Period {{this.closablePeriodLabel}} is already closed.
+            </div>
+          {{else}}
+            <p class="bookie-season-desc">
+              This snapshots the top 3 for the finished League Table period so it appears under previous winners.
+            </p>
+            <button class="btn btn-primary"
+                    disabled={{this.periodClosing}}
+                    {{on "click" this.closeCurrentPeriod}}>
+              {{#if this.periodClosing}}
+                Closing period…
+              {{else}}
+                Close period {{this.closablePeriodLabel}}
+              {{/if}}
+            </button>
+          {{/if}}
+        {{else}}
+          <p class="bookie-season-desc">
+            No finished period is waiting to be closed right now.
+          </p>
+        {{/if}}
       </div>
     </div>
 
@@ -736,6 +790,7 @@
         {{/if}}
       </div>
     </div>
+    {{/if}}
 
   </div>
   {{/if}}

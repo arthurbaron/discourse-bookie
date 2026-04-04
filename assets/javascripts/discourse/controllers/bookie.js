@@ -148,9 +148,14 @@ export default class BookieController extends Controller {
   // Admin state
   @tracked adminMatches = [];
   @tracked adminError = null;
+  @tracked adminSubTab = "events";
   @tracked seasonKey = null;
   @tracked seasonAlreadyClosed = false;
   @tracked seasonLoading = false;
+  @tracked closablePeriodKey = null;
+  @tracked closablePeriodLabel = null;
+  @tracked closablePeriodClosed = false;
+  @tracked periodClosing = false;
   @tracked nmHomeTeam = "";
   @tracked nmAwayTeam = "";
   @tracked nmTitle = "";
@@ -237,6 +242,12 @@ export default class BookieController extends Controller {
     }
   }
 
+  @action
+  setAdminSubTab(tab) {
+    this.adminSubTab = tab;
+    this.adminError = null;
+  }
+
   // ── Bet form ────────────────────────────────────────
 
   @action
@@ -311,6 +322,19 @@ export default class BookieController extends Controller {
         formattedDate: formatDate(tx.date),
         isPositive: tx.amount > 0,
       }));
+    } catch (_e) {
+      // silently fail
+    }
+  }
+
+  async refreshLeaderboard() {
+    try {
+      const data = await ajax("/bookie/leaderboard.json");
+      this.leagueTable = data.league_table || [];
+      this.richestGooner = data.richest_gooner || [];
+      this.currentPeriodLabel = data.current_period_label || "";
+      this.periodHistory = data.period_history || [];
+      this.selectedPeriodKey = null;
     } catch (_e) {
       // silently fail
     }
@@ -562,8 +586,47 @@ export default class BookieController extends Controller {
       const data = await ajax("/admin/plugins/bookie/season.json");
       this.seasonKey = data.current_season_key;
       this.seasonAlreadyClosed = data.already_closed;
+      this.closablePeriodKey = data.closable_period_key || null;
+      this.closablePeriodLabel = data.closable_period_label || null;
+      this.closablePeriodClosed = Boolean(data.closable_period_closed);
     } catch (_e) {
       // silently fail
+    }
+  }
+
+  @action
+  async closeCurrentPeriod() {
+    if (!this.closablePeriodKey || this.closablePeriodClosed) {
+      this.adminError = "No finished period is ready to close.";
+      return;
+    }
+
+    if (
+      !confirm(
+        `Close period ${this.closablePeriodLabel}?\n\n` +
+        `This will snapshot the top 3 for the League Table and mark the period as completed.`
+      )
+    ) {
+      return;
+    }
+
+    this.periodClosing = true;
+    try {
+      const result = await ajax("/admin/plugins/bookie/period/close.json", {
+        type: "POST",
+        data: { period_key: this.closablePeriodKey },
+      });
+
+      this.closablePeriodClosed = true;
+      this.adminError = null;
+      await this.refreshLeaderboard();
+      await this.loadSeasonStatus();
+      alert(`Period ${result.period_label} has been closed.`);
+    } catch (e) {
+      this.adminError =
+        e.jqXHR?.responseJSON?.error || "Failed to close the current period.";
+    } finally {
+      this.periodClosing = false;
     }
   }
 

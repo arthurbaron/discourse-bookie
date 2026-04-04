@@ -32,6 +32,15 @@ class BookieLeagueEntry < ActiveRecord::Base
     period_for(Date.today)
   end
 
+  def self.closable_period_key(date = Date.today)
+    current = period_for(date)
+    candidate = period_for(date - 1)
+    return nil unless candidate
+    return nil if candidate == current
+
+    candidate
+  end
+
   # ── Finders ───────────────────────────────────────────────────────────────
 
   def self.for_user(user_id, period_key = nil)
