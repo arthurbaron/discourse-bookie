@@ -8,7 +8,7 @@ export default apiInitializer("0.11.1", (api) => {
     name: "bookie",
     displayName: "Bookie",
     href: "/bookie",
-    title: "Virtual match betting",
+    title: "Virtual event betting",
     icon: "shield",
   });
 
@@ -107,7 +107,7 @@ export default apiInitializer("0.11.1", (api) => {
         const placeholder = document.createElement("div");
         placeholder.className = "bookie-widget";
         placeholder.innerHTML =
-          '<div class="bookie-widget-loading">Loading matches...</div>';
+          '<div class="bookie-widget-loading">Loading events...</div>';
 
         // Replace the paragraph content
         const parent = node.parentNode;
@@ -122,14 +122,14 @@ export default apiInitializer("0.11.1", (api) => {
 
             if (matches.length === 0) {
               placeholder.innerHTML =
-                '<div class="bookie-widget-empty">No open matches right now.</div>';
+                '<div class="bookie-widget-empty">No open events right now.</div>';
               return;
             }
 
             placeholder.innerHTML = `
               <div class="bookie-widget-header">
                 <span class="bookie-widget-icon">🎲</span>
-                <strong>Open bets this week</strong>
+                <strong>Open events this week</strong>
                 <a href="/bookie" class="bookie-widget-link">View all →</a>
               </div>
               <ul class="bookie-widget-list">
@@ -156,14 +156,14 @@ export default apiInitializer("0.11.1", (api) => {
               </ul>
               ${
                 matches.length > 3
-                  ? `<a href="/bookie" class="bookie-widget-more">+${matches.length - 3} more matches →</a>`
+                  ? `<a href="/bookie" class="bookie-widget-more">+${matches.length - 3} more events →</a>`
                   : ""
               }
             `;
           })
           .catch(() => {
             placeholder.innerHTML =
-              '<div class="bookie-widget-empty">Could not load matches.</div>';
+              '<div class="bookie-widget-empty">Could not load events.</div>';
           });
       });
     },

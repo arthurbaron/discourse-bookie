@@ -5,7 +5,6 @@
     <div class="bookie-header-title">
       <span class="bookie-header-trophy">🏆</span>
       <h1>Bookie</h1>
-      <span class="bookie-subtitle">For Gooners, not gamblers · no real money</span>
     </div>
     <div class="bookie-balance-badge">
       <span class="bookie-balance-label">Your balance</span>
@@ -16,7 +15,7 @@
   {{! ── Tabs ── }}
   <div class="bookie-tabs">
     <button class="bookie-tab {{if (eq this.activeTab 'matches') 'active'}}"
-            {{on "click" (fn this.setTab "matches")}}>Open matches</button>
+            {{on "click" (fn this.setTab "matches")}}>Open events</button>
     <button class="bookie-tab {{if (eq this.activeTab 'results') 'active'}}"
             {{on "click" (fn this.setTab "results")}}>Results</button>
     <button class="bookie-tab {{if (eq this.activeTab 'wallet') 'active'}}"
@@ -111,7 +110,7 @@
                 {{/if}}
               </div>
             {{else}}
-              <div class="bookie-closed-notice">Betting closed for this match</div>
+              <div class="bookie-closed-notice">Betting closed for this event</div>
             {{/if}}
 
             <div class="bookie-match-deadline">Closes: {{match.formattedDeadline}}</div>
@@ -121,7 +120,7 @@
       </div>
     {{else}}
       <div class="bookie-empty">
-        No matches open for betting right now — check back soon!
+        No events open for betting right now — check back soon!
       </div>
     {{/if}}
   </div>
@@ -159,7 +158,7 @@
         {{/each}}
       </div>
     {{else}}
-      <div class="bookie-empty">No settled matches yet.</div>
+      <div class="bookie-empty">No settled events yet.</div>
     {{/if}}
   </div>
   {{/if}}
@@ -377,7 +376,7 @@
           <span class="bookie-rules-pts">+2</span>
           <div>
             <strong>Participation</strong>
-            <span>Placing any bet on a match</span>
+            <span>Placing any bet on an event</span>
           </div>
         </div>
         <div class="bookie-rules-row">
@@ -411,7 +410,7 @@
 
       <h3 class="bookie-rules-subheading">Important notes</h3>
       <p class="bookie-rules-body">
-        Bet size does not affect your points. A minimum 10-coin bet on a match earns the same points as a max bet.
+        Bet size does not affect your points. A minimum 10-coin bet on an event earns the same points as a max bet.
         The league table is purely about picking the right outcome, not risk-taking.
       </p>
     </div>
@@ -467,9 +466,9 @@
     <div class="bookie-rules-section bookie-rules-section--general">
       <h3 class="bookie-rules-subheading">General rules</h3>
       <ul class="bookie-rules-list">
-        <li>One bet per match, per person. No changing your mind after the deadline.</li>
-        <li>You can cancel a pending bet before the match deadline — your coins are refunded.</li>
-        <li>Admins set the odds and settle matches. Results are final once settled.</li>
+        <li>One bet per event, per person. No changing your mind after the deadline.</li>
+        <li>You can cancel a pending bet before the event deadline — your coins are refunded.</li>
+        <li>Admins set the odds and settle events. Results are final once settled.</li>
         <li>This is for fun only. Coins have no monetary value.</li>
       </ul>
     </div>
@@ -501,7 +500,7 @@
     {{/if}}
 
     {{#if (eq this.adminSubTab "events")}}
-    <h2>Create new match</h2>
+    <h2>Create new event</h2>
     <div class="bookie-admin-form">
       <div class="bookie-form-row">
         <label>Home team</label>
@@ -554,11 +553,11 @@
         </span>
       </div>
       <button class="btn btn-primary" {{on "click" this.createMatch}}>
-        Create match
+        Create event
       </button>
     </div>
 
-    <h2 class="bookie-section-title">Open matches</h2>
+    <h2 class="bookie-section-title">Open events</h2>
     {{#if this.adminMatches.length}}
       {{#each this.adminMatches as |match|}}
         <div class="bookie-admin-match-row">
@@ -615,7 +614,7 @@
               <div class="bookie-admin-edit-actions">
                 <button class="btn btn-small btn-danger"
                         {{on "click" (fn this.deleteMatch match)}}>
-                  Delete match
+                  Delete event
                 </button>
                 <button class="btn btn-primary btn-small"
                         {{on "click" (fn this.saveMatch match)}}>
@@ -645,7 +644,7 @@
                 <button class="bookie-admin-icon-btn"
                         type="button"
                         style="background: transparent; border: 1px solid var(--primary-low-mid, var(--primary-low)); border-radius: 2px; box-shadow: none; color: var(--primary-medium);"
-                        title="Edit match"
+                        title="Edit event"
                         {{on "click" (fn this.startEditingMatch match)}}>
                   {{d-icon "pencil-alt"}}
                 </button>
@@ -678,7 +677,7 @@
         </div>
       {{/each}}
     {{else}}
-      <div class="bookie-empty">No open matches to manage.</div>
+      <div class="bookie-empty">No open events to manage.</div>
     {{/if}}
     {{/if}}
 

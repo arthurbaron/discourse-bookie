@@ -352,7 +352,7 @@ export default class BookieController extends Controller {
         deadlineLocal: formatDateTimeLocal(m.deadline),
       }));
     } catch (_e) {
-      this.adminError = "Failed to load matches.";
+      this.adminError = "Failed to load events.";
     }
   }
 
@@ -414,7 +414,7 @@ export default class BookieController extends Controller {
       this.adminError = null;
     } catch (e) {
       const errors = e.jqXHR?.responseJSON?.errors;
-      this.adminError = errors ? errors.join(", ") : "Failed to create match.";
+      this.adminError = errors ? errors.join(", ") : "Failed to create event.";
     }
   }
 
@@ -542,7 +542,7 @@ export default class BookieController extends Controller {
       this.adminError = null;
     } catch (e) {
       const errors = e.jqXHR?.responseJSON?.errors;
-      this.adminError = errors ? errors.join(", ") : "Failed to update match.";
+      this.adminError = errors ? errors.join(", ") : "Failed to update event.";
     }
   }
 
@@ -553,7 +553,7 @@ export default class BookieController extends Controller {
       draw: "Draw",
       away: `${match.away_team} wins`,
     };
-    if (!confirm(`Settle match as: ${labels[result]}?`)) return;
+    if (!confirm(`Settle event as: ${labels[result]}?`)) return;
 
     try {
       await ajax(`/admin/plugins/bookie/matches/${match.id}/settle.json`, {
@@ -575,7 +575,7 @@ export default class BookieController extends Controller {
         (m) => new MatchState({ ...m, currency })
       );
     } catch (e) {
-      alert(e.jqXHR?.responseJSON?.error || "Failed to settle match.");
+      alert(e.jqXHR?.responseJSON?.error || "Failed to settle event.");
     }
   }
 
@@ -660,7 +660,7 @@ export default class BookieController extends Controller {
   async deleteMatch(match) {
     if (
       !confirm(
-        `Delete "${match.title}"? All pending bets will be refunded.`
+        `Delete "${match.title}"? All pending bets on this event will be refunded.`
       )
     ) {
       return;
@@ -672,7 +672,7 @@ export default class BookieController extends Controller {
       });
       this.adminMatches = this.adminMatches.filter((m) => m.id !== match.id);
     } catch (e) {
-      alert(e.jqXHR?.responseJSON?.error || "Failed to delete match.");
+      alert(e.jqXHR?.responseJSON?.error || "Failed to delete event.");
     }
   }
 }
