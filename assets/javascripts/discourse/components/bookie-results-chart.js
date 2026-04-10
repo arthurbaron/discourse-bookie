@@ -51,7 +51,7 @@ export default class BookieResultsChart extends Component {
       date: point.date,
     }));
 
-    loadScript("/javascripts/chart.min.js").then(() => {
+    loadScript("/javascripts/Chart.min.js").then(() => {
       this._resetChart();
 
       if (!this.element) {
