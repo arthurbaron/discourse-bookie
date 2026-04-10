@@ -5,15 +5,20 @@ function buildChartPoints(timeline) {
     return [];
   }
 
-  const chartTop = 6;
-  const chartBottom = 46;
+  const chartLeft = 4;
+  const chartRight = 96;
+  const chartTop = 12;
+  const chartBottom = 88;
   const chartHeight = chartBottom - chartTop;
   const values = timeline.map((item) => item.cumulative_points || 0);
   const min = Math.min(...values);
   const max = Math.max(...values);
 
   return timeline.map((item, index) => {
-    const x = timeline.length === 1 ? 50 : (index / (timeline.length - 1)) * 100;
+    const x =
+      timeline.length === 1
+        ? 50
+        : chartLeft + (index / (timeline.length - 1)) * (chartRight - chartLeft);
     const value = item.cumulative_points || 0;
     const normalized = max === min ? 0.5 : (value - min) / (max - min);
     const y = chartBottom - normalized * chartHeight;
@@ -53,7 +58,7 @@ function buildAreaPath(points) {
     return "";
   }
 
-  const baseY = 46;
+  const baseY = 88;
   const linePath = buildLinePath(points);
   const first = points[0];
   const last = points[points.length - 1];
@@ -80,6 +85,6 @@ export default class BookieResultsChart extends Component {
   }
 
   get gridLines() {
-    return [6, 19.33, 32.66, 46];
+    return [12, 37.33, 62.66, 88];
   }
 }
