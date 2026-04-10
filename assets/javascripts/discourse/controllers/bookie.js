@@ -135,6 +135,82 @@ function localDateTimeToIso(value) {
   return date.toISOString();
 }
 
+function defaultResultsStats() {
+  return {
+    summary: {
+      total_settled_bets: 0,
+      wins: 0,
+      losses: 0,
+      hit_rate: 0,
+      current_streak: 0,
+      best_streak: 0,
+      total_league_points: 0,
+      total_coin_delta: 0,
+      average_winning_odds: null,
+      biggest_win: 0,
+    },
+    recent_form: [],
+    wins_losses: [
+      { label: "Correct", value: 0 },
+      { label: "Wrong", value: 0 },
+    ],
+    points_timeline: [],
+  };
+}
+
+function formatSignedValue(value, suffix = "") {
+  const number = Number(value) || 0;
+  const prefix = number > 0 ? "+" : "";
+  return `${prefix}${number}${suffix}`;
+}
+
+function buildChartPoints(timeline) {
+  if (!timeline?.length) {
+    return [];
+  }
+
+  const chartTop = 6;
+  const chartBottom = 46;
+  const chartHeight = chartBottom - chartTop;
+  const values = timeline.map((item) => item.cumulative_points || 0);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  return timeline.map((item, index) => {
+    const x = timeline.length === 1 ? 50 : (index / (timeline.length - 1)) * 100;
+    const value = item.cumulative_points || 0;
+    const normalized = max === min ? 0.5 : (value - min) / (max - min);
+
+    return {
+      ...item,
+      x: Number(x.toFixed(2)),
+      y: Number((chartBottom - normalized * chartHeight).toFixed(2)),
+    };
+  });
+}
+
+function buildLinePath(points) {
+  if (!points.length) {
+    return "";
+  }
+
+  return points
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .join(" ");
+}
+
+function buildAreaPath(points) {
+  if (!points.length) {
+    return "";
+  }
+
+  const baseY = 46;
+  const linePath = buildLinePath(points);
+  const first = points[0];
+  const last = points[points.length - 1];
+  return `${linePath} L ${last.x} ${baseY} L ${first.x} ${baseY} Z`;
+}
+
 export default class BookieController extends Controller {
   @service currentUser;
   queryParams = [{ activeTab: "tab" }];
@@ -144,6 +220,8 @@ export default class BookieController extends Controller {
   @tracked settledMatches = [];
   @tracked balance = 0;
   @tracked currency = "coins";
+  @tracked resultsSubTab = "my-results";
+  @tracked resultsStats = defaultResultsStats();
   @tracked walletTransactions = [];
   @tracked walletBalance = 0;
   // Standings state
@@ -192,6 +270,110 @@ export default class BookieController extends Controller {
   get leagueRest()   { return this.leagueTable.slice(3); }
   get richestPodium() { return this.richestGooner.slice(0, 3); }
   get richestRest()   { return this.richestGooner.slice(3); }
+  get resultsSummary() {
+    return this.resultsStats?.summary || defaultResultsStats().summary;
+  }
+
+  get resultsHasStats() {
+    return this.resultsSummary.total_settled_bets > 0;
+  }
+
+  get resultsPointsTimeline() {
+    return this.resultsStats?.points_timeline || [];
+  }
+
+  get resultsChartPoints() {
+    return buildChartPoints(this.resultsPointsTimeline);
+  }
+
+  get resultsChartLinePath() {
+    return buildLinePath(this.resultsChartPoints);
+  }
+
+  get resultsChartAreaPath() {
+    return buildAreaPath(this.resultsChartPoints);
+  }
+
+  get resultsChartGridLines() {
+    return [6, 19.33, 32.66, 46];
+  }
+
+  get resultsRecentForm() {
+    return this.resultsStats?.recent_form || [];
+  }
+
+  get resultsRecentFormSummary() {
+    const recent = this.resultsRecentForm;
+    if (!recent.length) {
+      return "No settled events yet.";
+    }
+
+    const correct = recent.filter((entry) => entry.result === "W").length;
+    return `${correct} correct in your last ${recent.length}`;
+  }
+
+  get resultsWins() {
+    return this.resultsSummary.wins || 0;
+  }
+
+  get resultsLosses() {
+    return this.resultsSummary.losses || 0;
+  }
+
+  get resultsCorrectWidth() {
+    const total = this.resultsWins + this.resultsLosses;
+    if (!total) {
+      return 0;
+    }
+
+    return Math.round((this.resultsWins / total) * 100);
+  }
+
+  get resultsWrongWidth() {
+    const total = this.resultsWins + this.resultsLosses;
+    if (!total) {
+      return 0;
+    }
+
+    return 100 - this.resultsCorrectWidth;
+  }
+
+  get resultsHitRateText() {
+    return `${this.resultsSummary.hit_rate || 0}%`;
+  }
+
+  get resultsLeaguePointsText() {
+    return `${this.resultsSummary.total_league_points || 0} pts`;
+  }
+
+  get resultsCoinDeltaText() {
+    return formatSignedValue(
+      this.resultsSummary.total_coin_delta,
+      ` ${this.currency}`
+    );
+  }
+
+  get resultsCoinDeltaClass() {
+    return (this.resultsSummary.total_coin_delta || 0) >= 0
+      ? "bet-status-won"
+      : "bet-status-lost";
+  }
+
+  get resultsAverageWinningOddsText() {
+    if (!this.resultsSummary.average_winning_odds) {
+      return "—";
+    }
+
+    return `${this.resultsSummary.average_winning_odds}x`;
+  }
+
+  get resultsBiggestWinText() {
+    if (!this.resultsSummary.biggest_win) {
+      return `0 ${this.currency}`;
+    }
+
+    return formatSignedValue(this.resultsSummary.biggest_win, ` ${this.currency}`);
+  }
 
   setup(model) {
     const currency = model.currency || "coins";
@@ -199,8 +381,10 @@ export default class BookieController extends Controller {
     this.settledMatches = (model.settled_matches || []).map(
       (m) => new MatchState({ ...m, currency })
     );
+    this.resultsStats = model.results_stats || defaultResultsStats();
     this.balance = model.balance || 0;
     this.currency = currency;
+    this.resultsSubTab = "my-results";
     this.walletBalance = model.wallet?.balance || 0;
     this.walletTransactions = (model.wallet?.transactions || []).map((tx) => ({
       ...tx,
@@ -233,6 +417,11 @@ export default class BookieController extends Controller {
   @action
   setStandingsTab(tab) {
     this.standingsTab = tab;
+  }
+
+  @action
+  setResultsSubTab(tab) {
+    this.resultsSubTab = tab;
   }
 
   @action
@@ -592,6 +781,7 @@ export default class BookieController extends Controller {
       this.settledMatches = (freshData.settled_matches || []).map(
         (m) => new MatchState({ ...m, currency })
       );
+      this.resultsStats = freshData.stats || defaultResultsStats();
     } catch (e) {
       alert(e.jqXHR?.responseJSON?.error || "Failed to settle event.");
     }

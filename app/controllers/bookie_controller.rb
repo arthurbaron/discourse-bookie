@@ -25,6 +25,7 @@ class BookieController < ApplicationController
     render json: {
       matches:         open_matches.map { |m| serialize_match(m, user_bets[m.id]) },
       settled_matches: settled.map { |m| serialize_match(m, settled_bets[m.id], settled_scores[m.id]) },
+      stats:           results_stats_for(current_user.id),
       balance:         wallet.balance,
       currency:        bookie_currency
     }
@@ -229,38 +230,186 @@ class BookieController < ApplicationController
       period_key = BookieLeagueEntry.period_for(settled_at.to_date)
       next unless period_key
 
-      won = bet.status == "won"
-      streak = streak_by_period[period_key]
-      breakdown = [{ points: 2, label: "participation" }]
+      score_data = league_score_data_for_bet(
+        won: bet.status == "won",
+        odds: bet.odds,
+        streak: streak_by_period[period_key]
+      )
 
-      if won
-        streak += 1
-        breakdown << { points: 10, label: "correct pick" }
-
-        odds_bonus = [(bet.odds.to_f - 1) * 4, 0].max.round
-        breakdown << { points: odds_bonus, label: "odds bonus" } if odds_bonus > 0
-
-        if streak == 3
-          breakdown << { points: 8, label: "winning streak (3 games)" }
-        elsif streak == 5
-          breakdown << { points: 18, label: "winning streak (5 games)" }
-        elsif streak == 8
-          breakdown << { points: 35, label: "winning streak (8 games)" }
-        end
-      else
-        streak = 0
-      end
-
-      streak_by_period[period_key] = streak
+      streak_by_period[period_key] = score_data[:streak]
       if target_ids.key?(bet.match_id)
         scores_by_match[bet.match_id] = {
-          total: breakdown.sum { |entry| entry[:points] },
-          breakdown: breakdown
+          total: score_data[:total],
+          breakdown: score_data[:breakdown]
         }
       end
     end
 
     scores_by_match
+  end
+
+  def results_stats_for(user_id)
+    settled_bets = BookieBet
+      .joins(:bookie_match)
+      .where(user_id: user_id, status: %w[won lost])
+      .where(bookie_matches: { status: "settled" })
+      .select(
+        "bookie_bets.id, bookie_bets.match_id, bookie_bets.amount, bookie_bets.odds, " \
+        "bookie_bets.status, bookie_bets.payout, bookie_matches.title AS match_title, " \
+        "bookie_matches.updated_at AS settled_at"
+      )
+      .order("bookie_matches.updated_at ASC, bookie_bets.id ASC")
+
+    league_point_transactions = BookieTransaction
+      .left_joins(:bookie_match)
+      .where(user_id: user_id, transaction_type: "league_points")
+      .select(
+        "bookie_transactions.id, bookie_transactions.match_id, bookie_transactions.amount, " \
+        "bookie_transactions.created_at, bookie_matches.title AS match_title"
+      )
+      .order("bookie_transactions.created_at ASC, bookie_transactions.id ASC")
+
+    balance_checkpoints = {}
+    running_balance = 0
+    BookieTransaction
+      .where(user_id: user_id)
+      .order(:created_at, :id)
+      .select(:id, :match_id, :transaction_type, :amount, :created_at)
+      .each do |tx|
+        running_balance += tx.amount.to_i
+        if tx.match_id && %w[bet_won bet_lost].include?(tx.transaction_type)
+          balance_checkpoints[tx.match_id] = running_balance
+        end
+      end
+
+    return default_results_stats if settled_bets.blank?
+
+    total_settled_bets = 0
+    wins = 0
+    losses = 0
+    current_streak = 0
+    best_streak = 0
+    total_league_points = 0
+    total_coin_delta = 0
+    biggest_win = 0
+    winning_odds_total = 0.0
+    winning_odds_count = 0
+    recent_form = []
+    points_by_match_id = league_point_transactions.each_with_object({}) do |tx, memo|
+      memo[tx.match_id] = tx.amount.to_i if tx.match_id
+    end
+    total_league_points = league_point_transactions.sum { |tx| tx.amount.to_i }
+    timeline = []
+
+    settled_bets.each do |bet|
+      won = bet.status == "won"
+      points = points_by_match_id[bet.match_id].to_i
+      settled_at = bet.attributes["settled_at"] || bet.updated_at
+
+      total_settled_bets += 1
+
+      if won
+        wins += 1
+        current_streak += 1
+        best_streak = [best_streak, current_streak].max
+        winning_odds_total += bet.odds.to_f
+        winning_odds_count += 1
+      else
+        losses += 1
+        current_streak = 0
+      end
+
+      net_coin_delta = won ? (bet.payout.to_i - bet.amount.to_i) : -bet.amount.to_i
+      total_coin_delta += net_coin_delta
+      biggest_win = [biggest_win, net_coin_delta].max
+
+      timeline << {
+        label: bet.attributes["match_title"],
+        date: settled_at.iso8601,
+        delta_points: net_coin_delta,
+        cumulative_points: balance_checkpoints[bet.match_id].to_i,
+        won: won
+      }
+
+      recent_form << {
+        result: won ? "W" : "L",
+        label: bet.attributes["match_title"],
+        delta_points: points,
+        coin_delta: net_coin_delta
+      }
+    end
+
+    {
+      summary: {
+        total_settled_bets: total_settled_bets,
+        wins: wins,
+        losses: losses,
+        hit_rate: total_settled_bets.zero? ? 0 : ((wins.to_f / total_settled_bets) * 100).round,
+        current_streak: current_streak,
+        best_streak: best_streak,
+        total_league_points: total_league_points,
+        total_coin_delta: total_coin_delta,
+        average_winning_odds: winning_odds_count.zero? ? nil : (winning_odds_total / winning_odds_count).round(2),
+        biggest_win: biggest_win
+      },
+      recent_form: recent_form.last(10),
+      wins_losses: [
+        { label: "Correct", value: wins },
+        { label: "Wrong", value: losses }
+      ],
+      points_timeline: timeline.last(20)
+    }
+  end
+
+  def default_results_stats
+    {
+      summary: {
+        total_settled_bets: 0,
+        wins: 0,
+        losses: 0,
+        hit_rate: 0,
+        current_streak: 0,
+        best_streak: 0,
+        total_league_points: 0,
+        total_coin_delta: 0,
+        average_winning_odds: nil,
+        biggest_win: 0
+      },
+      recent_form: [],
+      wins_losses: [
+        { label: "Correct", value: 0 },
+        { label: "Wrong", value: 0 }
+      ],
+      points_timeline: []
+    }
+  end
+
+  def league_score_data_for_bet(won:, odds:, streak:)
+    breakdown = [{ points: 2, label: "participation" }]
+
+    if won
+      streak += 1
+      breakdown << { points: 10, label: "correct pick" }
+
+      odds_bonus = [(odds.to_f - 1) * 4, 0].max.round
+      breakdown << { points: odds_bonus, label: "odds bonus" } if odds_bonus > 0
+
+      if streak == 3
+        breakdown << { points: 8, label: "winning streak (3 games)" }
+      elsif streak == 5
+        breakdown << { points: 18, label: "winning streak (5 games)" }
+      elsif streak == 8
+        breakdown << { points: 35, label: "winning streak (8 games)" }
+      end
+    else
+      streak = 0
+    end
+
+    {
+      streak: streak,
+      total: breakdown.sum { |entry| entry[:points] },
+      breakdown: breakdown
+    }
   end
 
   def serialize_match(match, user_bet = nil, score_data = nil)

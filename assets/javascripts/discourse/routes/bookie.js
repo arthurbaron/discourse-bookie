@@ -16,6 +16,7 @@ export default class BookieRoute extends DiscourseRoute {
     return {
       matches: matchesData.matches || [],
       settled_matches: matchesData.settled_matches || [],
+      results_stats: matchesData.stats || {},
       balance: matchesData.balance || 0,
       currency: matchesData.currency || "coins",
       wallet: walletData || { transactions: [] },

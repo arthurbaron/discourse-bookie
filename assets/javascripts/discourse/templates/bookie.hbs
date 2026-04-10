@@ -131,62 +131,195 @@
   {{! ══════════════════════════════════════════════════ }}
   {{#if (eq this.activeTab "results")}}
   <div class="bookie-panel">
-    {{#if this.settledMatches.length}}
-      <div class="bookie-results-list">
-        {{#each this.settledMatches as |match|}}
-          <div class="bookie-result-row {{if match.detailsExpanded 'is-expanded'}} {{if match.hasLeagueBreakdown 'has-breakdown'}}">
-            <div class="bookie-result-main">
-              <div class="bookie-result-teams">
-                {{match.home_team}} vs {{match.away_team}}
+    <div class="bookie-standings-tabs bookie-results-tabs">
+      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'my-results') 'active'}}"
+              {{on "click" (fn this.setResultsSubTab "my-results")}}>
+        My results
+      </button>
+      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'stats') 'active'}}"
+              {{on "click" (fn this.setResultsSubTab "stats")}}>
+        Stats
+      </button>
+    </div>
+
+    {{#if (eq this.resultsSubTab "my-results")}}
+      {{#if this.settledMatches.length}}
+        <div class="bookie-results-list">
+          {{#each this.settledMatches as |match|}}
+            <div class="bookie-result-row {{if match.detailsExpanded 'is-expanded'}} {{if match.hasLeagueBreakdown 'has-breakdown'}}">
+              <div class="bookie-result-main">
+                <div class="bookie-result-teams">
+                  {{match.home_team}} vs {{match.away_team}}
+                </div>
+
+                <div class="bookie-result-trailing">
+                  {{#if match.userBet}}
+                    <div class="bookie-result-outcome">
+                      {{match.resultText}}
+                    </div>
+                    <div class="bookie-result-summary">
+                      <div class="bookie-result-score {{match.coinDeltaClass}}">
+                        {{match.coinDeltaText}}
+                      </div>
+                      {{#if match.hasLeaguePoints}}
+                        <div class="bookie-result-score-divider"></div>
+                        <div class="bookie-result-score {{match.pointsDeltaClass}}">
+                          {{match.pointsDeltaText}}
+                        </div>
+                      {{/if}}
+                    </div>
+                  {{else}}
+                    <div class="bookie-result-outcome">
+                      {{match.resultText}}
+                    </div>
+                  {{/if}}
+
+                  {{#if match.hasLeagueBreakdown}}
+                    <button class="bookie-result-toggle"
+                            type="button"
+                            aria-expanded={{if match.detailsExpanded "true" "false"}}
+                            {{on "click" (fn this.toggleResultDetails match)}}>
+                      {{d-icon (if match.detailsExpanded "angle-up" "angle-down")}}
+                    </button>
+                  {{/if}}
+                </div>
               </div>
 
-              <div class="bookie-result-trailing">
-                {{#if match.userBet}}
-                  <div class="bookie-result-outcome">
-                    {{match.resultText}}
-                  </div>
-                  <div class="bookie-result-summary">
-                    <div class="bookie-result-score {{match.coinDeltaClass}}">
-                      {{match.coinDeltaText}}
+              {{#if (and match.detailsExpanded match.hasLeagueBreakdown)}}
+                <div class="bookie-result-breakdown">
+                  {{#each match.leaguePointsBreakdown as |entry|}}
+                    <div class="bookie-result-breakdown-item">
+                      +{{entry.points}} {{entry.label}}
                     </div>
-                    {{#if match.hasLeaguePoints}}
-                      <div class="bookie-result-score-divider"></div>
-                      <div class="bookie-result-score {{match.pointsDeltaClass}}">
-                        {{match.pointsDeltaText}}
-                      </div>
-                    {{/if}}
-                  </div>
-                {{else}}
-                  <div class="bookie-result-outcome">
-                    {{match.resultText}}
-                  </div>
-                {{/if}}
+                  {{/each}}
+                </div>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <div class="bookie-empty">No settled events yet.</div>
+      {{/if}}
+    {{else}}
+      {{#if this.resultsHasStats}}
+        <div class="bookie-results-stats">
+          <div class="bookie-results-stats-grid">
+            <div class="bookie-stats-card">
+              <div class="bookie-stats-card-label">Hit rate</div>
+              <div class="bookie-stats-card-value">{{this.resultsHitRateText}}</div>
+            </div>
 
-                {{#if match.hasLeagueBreakdown}}
-                  <button class="bookie-result-toggle"
-                          type="button"
-                          aria-expanded={{if match.detailsExpanded "true" "false"}}
-                          {{on "click" (fn this.toggleResultDetails match)}}>
-                    {{d-icon (if match.detailsExpanded "angle-up" "angle-down")}}
-                  </button>
-                {{/if}}
+            <div class="bookie-stats-card">
+              <div class="bookie-stats-card-label">Current streak</div>
+              <div class="bookie-stats-card-value">{{this.resultsSummary.current_streak}}</div>
+            </div>
+
+            <div class="bookie-stats-card">
+              <div class="bookie-stats-card-label">Best streak</div>
+              <div class="bookie-stats-card-value">{{this.resultsSummary.best_streak}}</div>
+            </div>
+
+            <div class="bookie-stats-card">
+              <div class="bookie-stats-card-label">League points</div>
+              <div class="bookie-stats-card-value">{{this.resultsLeaguePointsText}}</div>
+            </div>
+          </div>
+
+          <div class="bookie-stats-panel">
+            <div class="bookie-stats-panel-header">
+              <div>
+                <h3 class="bookie-stats-panel-title">Balance over time</h3>
+                <p class="bookie-stats-panel-desc">Your coin balance after recent settled events.</p>
+              </div>
+              <span class="bookie-stats-panel-meta">Last {{this.resultsPointsTimeline.length}} settled events</span>
+            </div>
+
+            <BookieResultsChart @points={{this.resultsPointsTimeline}} @currency={{this.currency}} />
+          </div>
+
+          <div class="bookie-results-stats-lower">
+            <div class="bookie-stats-panel">
+              <div class="bookie-stats-panel-header">
+                <div>
+                  <h3 class="bookie-stats-panel-title">Prediction breakdown</h3>
+                  <p class="bookie-stats-panel-desc">How often you picked the right outcome.</p>
+                </div>
+              </div>
+
+              <div class="bookie-stats-breakdown-bar" aria-hidden="true">
+                <div
+                  class="bookie-stats-breakdown-segment is-win"
+                  style={{concat "width: " this.resultsCorrectWidth "%;"}}
+                ></div>
+                <div
+                  class="bookie-stats-breakdown-segment is-loss"
+                  style={{concat "width: " this.resultsWrongWidth "%;"}}
+                ></div>
+              </div>
+
+              <div class="bookie-stats-breakdown-legend">
+                <div class="bookie-stats-breakdown-item">
+                  <span class="bookie-stats-breakdown-dot is-win"></span>
+                  <span>Correct</span>
+                  <strong>{{this.resultsWins}}</strong>
+                </div>
+                <div class="bookie-stats-breakdown-item">
+                  <span class="bookie-stats-breakdown-dot is-loss"></span>
+                  <span>Wrong</span>
+                  <strong>{{this.resultsLosses}}</strong>
+                </div>
               </div>
             </div>
 
-            {{#if (and match.detailsExpanded match.hasLeagueBreakdown)}}
-              <div class="bookie-result-breakdown">
-                {{#each match.leaguePointsBreakdown as |entry|}}
-                  <div class="bookie-result-breakdown-item">
-                    +{{entry.points}} {{entry.label}}
+            <div class="bookie-stats-panel">
+              <div class="bookie-stats-panel-header">
+                <div>
+                  <h3 class="bookie-stats-panel-title">Recent form</h3>
+                  <p class="bookie-stats-panel-desc">{{this.resultsRecentFormSummary}}</p>
+                </div>
+              </div>
+
+              <div class="bookie-stats-form-row">
+                {{#each this.resultsRecentForm as |entry|}}
+                  <div class="bookie-stats-form-chip {{if (eq entry.result 'W') 'is-win' 'is-loss'}}">
+                    {{entry.result}}
                   </div>
                 {{/each}}
               </div>
-            {{/if}}
+            </div>
           </div>
-        {{/each}}
-      </div>
-    {{else}}
-      <div class="bookie-empty">No settled events yet.</div>
+
+          <div class="bookie-stats-panel">
+            <div class="bookie-stats-panel-header">
+              <div>
+                <h3 class="bookie-stats-panel-title">Your betting profile</h3>
+                <p class="bookie-stats-panel-desc">A quick read on your Bookie performance so far.</p>
+              </div>
+            </div>
+
+            <div class="bookie-stats-summary-list">
+              <div class="bookie-stats-summary-row">
+                <span>Total settled bets</span>
+                <strong>{{this.resultsSummary.total_settled_bets}}</strong>
+              </div>
+              <div class="bookie-stats-summary-row">
+                <span>Coin profit/loss</span>
+                <strong class="{{this.resultsCoinDeltaClass}}">{{this.resultsCoinDeltaText}}</strong>
+              </div>
+              <div class="bookie-stats-summary-row">
+                <span>Average winning odds</span>
+                <strong>{{this.resultsAverageWinningOddsText}}</strong>
+              </div>
+              <div class="bookie-stats-summary-row">
+                <span>Biggest win</span>
+                <strong class="bet-status-won">{{this.resultsBiggestWinText}}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      {{else}}
+        <div class="bookie-empty">No personal stats yet — settle a few events first.</div>
+      {{/if}}
     {{/if}}
   </div>
   {{/if}}
