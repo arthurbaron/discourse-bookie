@@ -1,6 +1,6 @@
 import Component from "@ember/component";
 import { schedule } from "@ember/runloop";
-import loadScript from "discourse/lib/load-script";
+import Chart from "chart.js/auto";
 
 export default class BookieResultsChart extends Component {
   points = null;
@@ -51,99 +51,97 @@ export default class BookieResultsChart extends Component {
       date: point.date,
     }));
 
-    loadScript("/javascripts/Chart.min.js").then(() => {
-      this._resetChart();
+    this._resetChart();
 
-      if (!this.element) {
-        return;
-      }
+    if (!this.element) {
+      return;
+    }
 
-      this._chart = new window.Chart(context, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              data,
-              fill: true,
-              borderColor: tertiary,
-              backgroundColor: `${tertiary}33`,
-              borderWidth: 2,
-              tension: 0.35,
-              pointRadius: 3,
-              pointHoverRadius: 4,
-              pointBackgroundColor: tertiary,
-              pointBorderColor: tertiary,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            duration: 0,
+    this._chart = new Chart(context, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            data,
+            fill: true,
+            borderColor: tertiary,
+            backgroundColor: `${tertiary}33`,
+            borderWidth: 2,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 4,
+            pointBackgroundColor: tertiary,
+            pointBorderColor: tertiary,
           },
-          plugins: {
-            legend: {
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0,
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            displayColors: false,
+            callbacks: {
+              title: (items) => details[items[0].dataIndex]?.label || "",
+              label: (item) => {
+                const detail = details[item.dataIndex];
+                return `Balance: ${detail?.cumulativePoints || 0} ${this.currency}`;
+              },
+              afterLabel: (item) => {
+                const detail = details[item.dataIndex];
+                const delta = detail?.deltaPoints || 0;
+                const prefix = delta > 0 ? "+" : "";
+                return `Event: ${prefix}${delta} ${this.currency}`;
+              },
+              footer: (items) => {
+                const detail = details[items[0].dataIndex];
+                if (!detail?.date) {
+                  return "";
+                }
+
+                return new Date(detail.date).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                });
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: {
               display: false,
             },
-            tooltip: {
-              displayColors: false,
-              callbacks: {
-                title: (items) => details[items[0].dataIndex]?.label || "",
-                label: (item) => {
-                  const detail = details[item.dataIndex];
-                  return `Balance: ${detail?.cumulativePoints || 0} ${this.currency}`;
-                },
-                afterLabel: (item) => {
-                  const detail = details[item.dataIndex];
-                  const delta = detail?.deltaPoints || 0;
-                  const prefix = delta > 0 ? "+" : "";
-                  return `Event: ${prefix}${delta} ${this.currency}`;
-                },
-                footer: (items) => {
-                  const detail = details[items[0].dataIndex];
-                  if (!detail?.date) {
-                    return "";
-                  }
-
-                  return new Date(detail.date).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                  });
-                },
-              },
+            ticks: {
+              color: medium,
+              maxTicksLimit: 6,
+            },
+            border: {
+              color: low,
             },
           },
-          scales: {
-            x: {
-              grid: {
-                display: false,
-              },
-              ticks: {
-                color: medium,
-                maxTicksLimit: 6,
-              },
-              border: {
-                color: low,
-              },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: medium,
+              callback: (value) => `${value}`,
             },
-            y: {
-              beginAtZero: true,
-              ticks: {
-                color: medium,
-                callback: (value) => `${value}`,
-              },
-              grid: {
-                color: low,
-              },
-              border: {
-                color: low,
-              },
+            grid: {
+              color: low,
+            },
+            border: {
+              color: low,
             },
           },
         },
-      });
+      },
     });
   }
 
