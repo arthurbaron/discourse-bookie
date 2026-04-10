@@ -342,6 +342,24 @@ export default class BookieController extends Controller {
     return `${this.resultsSummary.hit_rate || 0}%`;
   }
 
+  get resultsCurrentStreakFires() {
+    const streak = this.resultsSummary.current_streak || 0;
+
+    if (streak >= 8) {
+      return "🔥🔥🔥";
+    }
+
+    if (streak >= 5) {
+      return "🔥🔥";
+    }
+
+    if (streak >= 3) {
+      return "🔥";
+    }
+
+    return "";
+  }
+
   get resultsLeaguePointsText() {
     return `${this.resultsSummary.total_league_points || 0} pts`;
   }

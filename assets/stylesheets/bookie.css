@@ -453,6 +453,16 @@
   line-height: 1.1;
 }
 
+.bookie-stats-streak-fire {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.08em;
+  margin-left: 0.22em;
+  font-size: 0.8em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .bookie-stats-panel-header {
   display: flex;
   align-items: flex-start;
@@ -1148,18 +1158,31 @@
 
 @media (max-width: 600px) {
   .bookie-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
   }
 
   .bookie-header-title {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
   }
 
   .bookie-balance-badge {
-    align-items: flex-start;
-    width: fit-content;
-    max-width: 100%;
+    align-items: flex-end;
+    flex-shrink: 0;
+    width: auto;
+    max-width: none;
+    padding: 0.35rem 0.7rem;
+  }
+
+  .bookie-balance-label {
+    font-size: 0.66rem;
+  }
+
+  .bookie-balance-amount {
+    font-size: 1rem;
   }
 
   .bookie-matches-grid {

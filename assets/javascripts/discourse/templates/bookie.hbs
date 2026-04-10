@@ -205,13 +205,18 @@
         <div class="bookie-results-stats">
           <div class="bookie-results-stats-grid">
             <div class="bookie-stats-card">
-              <div class="bookie-stats-card-label">Hit rate</div>
+              <div class="bookie-stats-card-label">Prediction accuracy</div>
               <div class="bookie-stats-card-value">{{this.resultsHitRateText}}</div>
             </div>
 
             <div class="bookie-stats-card">
               <div class="bookie-stats-card-label">Current streak</div>
-              <div class="bookie-stats-card-value">{{this.resultsSummary.current_streak}}</div>
+              <div class="bookie-stats-card-value">
+                {{this.resultsSummary.current_streak}}
+                {{#if this.resultsCurrentStreakFires}}
+                  <span class="bookie-stats-streak-fire">{{this.resultsCurrentStreakFires}}</span>
+                {{/if}}
+              </div>
             </div>
 
             <div class="bookie-stats-card">
@@ -220,8 +225,8 @@
             </div>
 
             <div class="bookie-stats-card">
-              <div class="bookie-stats-card-label">League points</div>
-              <div class="bookie-stats-card-value">{{this.resultsLeaguePointsText}}</div>
+              <div class="bookie-stats-card-label">Periods won</div>
+              <div class="bookie-stats-card-value">{{this.resultsSummary.periods_won}}</div>
             </div>
           </div>
 

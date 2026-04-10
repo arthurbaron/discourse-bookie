@@ -284,6 +284,7 @@ class BookieController < ApplicationController
 
     return default_results_stats if settled_bets.blank?
 
+    periods_won = BookiePeriodSnapshot.where(user_id: user_id, rank: 1).count
     total_settled_bets = 0
     wins = 0
     losses = 0
@@ -347,6 +348,7 @@ class BookieController < ApplicationController
         hit_rate: total_settled_bets.zero? ? 0 : ((wins.to_f / total_settled_bets) * 100).round,
         current_streak: current_streak,
         best_streak: best_streak,
+        periods_won: periods_won,
         total_league_points: total_league_points,
         total_coin_delta: total_coin_delta,
         average_winning_odds: winning_odds_count.zero? ? nil : (winning_odds_total / winning_odds_count).round(2),
@@ -370,6 +372,7 @@ class BookieController < ApplicationController
         hit_rate: 0,
         current_streak: 0,
         best_streak: 0,
+        periods_won: 0,
         total_league_points: 0,
         total_coin_delta: 0,
         average_winning_odds: nil,
