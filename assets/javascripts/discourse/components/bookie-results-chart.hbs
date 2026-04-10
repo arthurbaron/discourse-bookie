@@ -1,3 +1,36 @@
 <div class="bookie-results-chart-container">
-  <canvas class="bookie-results-chart-canvas"></canvas>
+  {{#if this.hasPoints}}
+    <svg
+      class="bookie-stats-chart"
+      viewBox="0 0 100 52"
+      preserveAspectRatio="none"
+      aria-label="Coin balance over time"
+      role="img"
+    >
+      {{#each this.gridLines as |gridLine|}}
+        <line
+          class="bookie-stats-chart-gridline"
+          x1="0"
+          x2="100"
+          y1={{gridLine}}
+          y2={{gridLine}}
+        />
+      {{/each}}
+
+      <path class="bookie-stats-chart-area" d={{this.areaPath}} />
+      <path class="bookie-stats-chart-line" d={{this.linePath}} />
+
+      {{#each this.chartPoints as |point|}}
+        <circle
+          class="bookie-stats-chart-point"
+          cx={{point.x}}
+          cy={{point.y}}
+          r="1.8"
+          fill="var(--tertiary)"
+        >
+          <title>{{point.tooltip}}</title>
+        </circle>
+      {{/each}}
+    </svg>
+  {{/if}}
 </div>
