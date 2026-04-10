@@ -20,11 +20,11 @@ class BookieController < ApplicationController
     settled_bets = BookieBet
       .where(user_id: current_user.id, match_id: settled_ids)
       .index_by(&:match_id)
-    settled_points = settled_match_points_for(current_user.id, settled_ids)
+    settled_scores = settled_match_scores_for(current_user.id, settled_ids)
 
     render json: {
       matches:         open_matches.map { |m| serialize_match(m, user_bets[m.id]) },
-      settled_matches: settled.map { |m| serialize_match(m, settled_bets[m.id], settled_points[m.id]) },
+      settled_matches: settled.map { |m| serialize_match(m, settled_bets[m.id], settled_scores[m.id]) },
       balance:         wallet.balance,
       currency:        bookie_currency
     }
@@ -212,21 +212,9 @@ class BookieController < ApplicationController
     )
   end
 
-  def settled_match_points_for(user_id, match_ids)
-    direct_points = BookieTransaction
-      .where(user_id: user_id, transaction_type: "league_points", match_id: match_ids)
-      .pluck(:match_id, :amount)
-      .to_h
-
-    missing_match_ids = match_ids - direct_points.keys
-    return direct_points if missing_match_ids.empty?
-
-    direct_points.merge(reconstructed_match_points_for(user_id, missing_match_ids))
-  end
-
-  def reconstructed_match_points_for(user_id, target_match_ids)
+  def settled_match_scores_for(user_id, target_match_ids)
     target_ids = target_match_ids.each_with_object({}) { |match_id, memo| memo[match_id] = true }
-    points_by_match = {}
+    scores_by_match = {}
     streak_by_period = Hash.new(0)
 
     settled_bets = BookieBet
@@ -243,27 +231,39 @@ class BookieController < ApplicationController
 
       won = bet.status == "won"
       streak = streak_by_period[period_key]
-      pts = 2
+      breakdown = [{ points: 2, label: "participation" }]
 
       if won
         streak += 1
-        pts += 10
-        pts += [(bet.odds.to_f - 1) * 4, 0].max.round
-        pts += 8  if streak == 3
-        pts += 18 if streak == 5
-        pts += 35 if streak == 8
+        breakdown << { points: 10, label: "correct pick" }
+
+        odds_bonus = [(bet.odds.to_f - 1) * 4, 0].max.round
+        breakdown << { points: odds_bonus, label: "odds bonus" } if odds_bonus > 0
+
+        if streak == 3
+          breakdown << { points: 8, label: "winning streak (3 games)" }
+        elsif streak == 5
+          breakdown << { points: 18, label: "winning streak (5 games)" }
+        elsif streak == 8
+          breakdown << { points: 35, label: "winning streak (8 games)" }
+        end
       else
         streak = 0
       end
 
       streak_by_period[period_key] = streak
-      points_by_match[bet.match_id] = pts if target_ids.key?(bet.match_id)
+      if target_ids.key?(bet.match_id)
+        scores_by_match[bet.match_id] = {
+          total: breakdown.sum { |entry| entry[:points] },
+          breakdown: breakdown
+        }
+      end
     end
 
-    points_by_match
+    scores_by_match
   end
 
-  def serialize_match(match, user_bet = nil, points_amount = nil)
+  def serialize_match(match, user_bet = nil, score_data = nil)
     {
       id:         match.id,
       title:      match.title,
@@ -277,7 +277,8 @@ class BookieController < ApplicationController
       result:     match.result,
       can_bet:    match.can_bet?,
       user_bet:   user_bet ? serialize_bet(user_bet) : nil,
-      league_points: points_amount
+      league_points: score_data&.dig(:total),
+      league_points_breakdown: score_data&.dig(:breakdown)
     }
   end
 

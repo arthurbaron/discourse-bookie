@@ -9,6 +9,7 @@ class MatchState {
   @tracked selectedChoice = null;
   @tracked betAmount = "";
   @tracked betError = null;
+  @tracked detailsExpanded = false;
   @tracked _userBet = null;
   @tracked _canBet = false;
 
@@ -68,6 +69,14 @@ class MatchState {
 
   get hasLeaguePoints() {
     return Number.isInteger(this.league_points);
+  }
+
+  get leaguePointsBreakdown() {
+    return this.league_points_breakdown || [];
+  }
+
+  get hasLeagueBreakdown() {
+    return this.leaguePointsBreakdown.length > 0;
   }
 
   get coinDeltaClass() {
@@ -254,6 +263,15 @@ export default class BookieController extends Controller {
   selectChoice(match, choice) {
     match.selectedChoice = match.selectedChoice === choice ? null : choice;
     match.betError = null;
+  }
+
+  @action
+  toggleResultDetails(match) {
+    if (!match.hasLeagueBreakdown) {
+      return;
+    }
+
+    match.detailsExpanded = !match.detailsExpanded;
   }
 
   @action

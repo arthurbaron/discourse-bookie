@@ -312,41 +312,55 @@
 
 .bookie-result-row {
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  padding: 0.75rem 1.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem;
   background: var(--secondary);
   border: 1px solid var(--primary-low);
   border-radius: 12px;
 }
 
+.bookie-result-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  width: 100%;
+  justify-content: space-between;
+}
+
 .bookie-result-teams {
-  font-size: 1.12rem;
+  font-size: 1rem;
   font-weight: 600;
   flex: 1;
   min-width: 200px;
 }
 
+.bookie-result-trailing {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  margin-left: auto;
+}
+
 .bookie-result-outcome {
-  padding: 0.55rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  background: var(--primary-low);
-  line-height: 1;
+  color: var(--primary-medium);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .bookie-result-summary {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  margin-left: auto;
+  gap: 0.65rem;
   flex-wrap: nowrap;
 }
 
 .bookie-result-score {
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   font-weight: 600;
   line-height: 1.375;
   white-space: nowrap;
@@ -362,6 +376,43 @@
 
 .bookie-result-points {
   color: var(--primary);
+}
+
+.bookie-result-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--primary-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.bookie-result-toggle:hover {
+  color: var(--primary);
+}
+
+.bookie-result-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-left: 0;
+}
+
+.bookie-result-breakdown-item {
+  color: var(--primary-medium);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .bet-status-won  { color: var(--success); }
@@ -891,6 +942,72 @@
     flex-direction: row;
     justify-content: space-between;
     padding: 0.5rem 0.75rem;
+  }
+
+  .bookie-result-row {
+    padding: 0.75rem 0.9rem;
+  }
+
+  .bookie-result-main {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.55rem;
+    position: relative;
+    justify-content: flex-start;
+  }
+
+  .bookie-result-teams {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .bookie-result-trailing {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.35rem;
+    margin-left: 0;
+    padding-right: 0;
+  }
+
+  .bookie-result-score-divider {
+    display: none;
+  }
+
+  .bookie-result-outcome {
+    grid-column: 1;
+    order: 0;
+    white-space: normal;
+  }
+
+  .bookie-result-summary {
+    grid-column: 1 / -1;
+    order: 0;
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  .bookie-result-toggle {
+    position: static;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    justify-self: end;
+    margin-left: 0;
+    transform: none;
+  }
+
+  .bookie-result-breakdown {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .bookie-result-breakdown-item {
+    white-space: normal;
   }
 
   .bookie-lb-panel {

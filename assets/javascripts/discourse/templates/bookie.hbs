@@ -134,24 +134,52 @@
     {{#if this.settledMatches.length}}
       <div class="bookie-results-list">
         {{#each this.settledMatches as |match|}}
-          <div class="bookie-result-row">
-            <div class="bookie-result-teams">
-              {{match.home_team}} vs {{match.away_team}}
-            </div>
-            <div class="bookie-result-outcome result-{{match.result}}">
-              {{match.resultText}}
-            </div>
-            {{#if match.userBet}}
-              <div class="bookie-result-summary">
-                <div class="bookie-result-score {{match.coinDeltaClass}}">
-                  {{match.coinDeltaText}}
-                </div>
-                {{#if match.hasLeaguePoints}}
-                  <div class="bookie-result-score-divider"></div>
-                  <div class="bookie-result-score {{match.pointsDeltaClass}}">
-                    {{match.pointsDeltaText}}
+          <div class="bookie-result-row {{if match.detailsExpanded 'is-expanded'}} {{if match.hasLeagueBreakdown 'has-breakdown'}}">
+            <div class="bookie-result-main">
+              <div class="bookie-result-teams">
+                {{match.home_team}} vs {{match.away_team}}
+              </div>
+
+              <div class="bookie-result-trailing">
+                {{#if match.userBet}}
+                  <div class="bookie-result-outcome">
+                    {{match.resultText}}
+                  </div>
+                  <div class="bookie-result-summary">
+                    <div class="bookie-result-score {{match.coinDeltaClass}}">
+                      {{match.coinDeltaText}}
+                    </div>
+                    {{#if match.hasLeaguePoints}}
+                      <div class="bookie-result-score-divider"></div>
+                      <div class="bookie-result-score {{match.pointsDeltaClass}}">
+                        {{match.pointsDeltaText}}
+                      </div>
+                    {{/if}}
+                  </div>
+                {{else}}
+                  <div class="bookie-result-outcome">
+                    {{match.resultText}}
                   </div>
                 {{/if}}
+
+                {{#if match.hasLeagueBreakdown}}
+                  <button class="bookie-result-toggle"
+                          type="button"
+                          aria-expanded={{if match.detailsExpanded "true" "false"}}
+                          {{on "click" (fn this.toggleResultDetails match)}}>
+                    {{d-icon (if match.detailsExpanded "angle-up" "angle-down")}}
+                  </button>
+                {{/if}}
+              </div>
+            </div>
+
+            {{#if (and match.detailsExpanded match.hasLeagueBreakdown)}}
+              <div class="bookie-result-breakdown">
+                {{#each match.leaguePointsBreakdown as |entry|}}
+                  <div class="bookie-result-breakdown-item">
+                    +{{entry.points}} {{entry.label}}
+                  </div>
+                {{/each}}
               </div>
             {{/if}}
           </div>
