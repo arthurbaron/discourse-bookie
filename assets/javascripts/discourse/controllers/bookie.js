@@ -393,6 +393,31 @@ export default class BookieController extends Controller {
     return formatSignedValue(this.resultsSummary.biggest_win, ` ${this.currency}`);
   }
 
+  get resultsBestTeamText() {
+    if (!this.resultsSummary.best_team) {
+      return "—";
+    }
+
+    return this.resultsSummary.best_team;
+  }
+
+  get resultsBestTeamProfitText() {
+    if (!this.resultsSummary.best_team) {
+      return "";
+    }
+
+    return formatSignedValue(
+      this.resultsSummary.best_team_profit,
+      ` ${this.currency}`
+    );
+  }
+
+  get resultsBestTeamProfitClass() {
+    return (this.resultsSummary.best_team_profit || 0) >= 0
+      ? "bet-status-won"
+      : "bet-status-lost";
+  }
+
   setup(model) {
     const currency = model.currency || "coins";
     this.matches = (model.matches || []).map((m) => new MatchState({ ...m, currency }));

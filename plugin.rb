@@ -7,6 +7,10 @@
 register_asset "stylesheets/bookie.css"
 register_svg_icon "trophy"
 
+extend_content_security_policy(
+  script_src: %w[https://cdn.jsdelivr.net]
+)
+
 after_initialize do
   [
     "app/models/bookie_match",

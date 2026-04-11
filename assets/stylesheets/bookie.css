@@ -492,61 +492,27 @@
   white-space: nowrap;
 }
 
-.bookie-stats-chart-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
+/* ── Chart.js canvas chart ─────────────────────────── */
 
-.bookie-results-chart-container {
+.bookie-chart-outer {
   position: relative;
   width: 100%;
   height: 220px;
 }
 
-.bookie-stats-chart {
-  width: 100%;
-  height: 220px;
+.bookie-chart-canvas {
   display: block;
-  overflow: visible;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-.bookie-stats-chart-gridline {
-  stroke: var(--primary-low);
-  stroke-width: 0.35;
-}
-
-.bookie-stats-chart-area {
-  fill: color-mix(in srgb, var(--tertiary) 14%, transparent);
-}
-
-.bookie-stats-chart-line {
-  fill: none;
-  stroke: var(--tertiary);
-  stroke-width: 1.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.bookie-stats-chart-point {
-  fill: var(--tertiary);
-  stroke: color-mix(in srgb, var(--secondary) 70%, transparent);
-  stroke-width: 0.35;
-}
-
-.bookie-stats-chart-point.is-win {
-  fill: var(--success);
-}
-
-.bookie-stats-chart-point.is-loss {
-  fill: var(--primary-medium);
-}
-
-.bookie-stats-chart-axis {
+.bookie-chart-empty {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   color: var(--primary-medium);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .bookie-results-stats-lower {
@@ -592,6 +558,20 @@
 .bookie-stats-breakdown-item strong,
 .bookie-stats-summary-row strong {
   color: var(--primary);
+}
+
+.bookie-stats-summary-subrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: -0.25rem;
+  color: var(--primary-medium);
+  font-size: 0.82rem;
+}
+
+.bookie-stats-summary-subrow strong {
+  font-weight: 600;
 }
 
 .bookie-stats-breakdown-dot {
@@ -1283,7 +1263,7 @@
     white-space: normal;
   }
 
-  .bookie-results-chart-container {
+  .bookie-chart-outer {
     height: 180px;
   }
 

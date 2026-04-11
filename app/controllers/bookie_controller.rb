@@ -255,7 +255,9 @@ class BookieController < ApplicationController
       .where(bookie_matches: { status: "settled" })
       .select(
         "bookie_bets.id, bookie_bets.match_id, bookie_bets.amount, bookie_bets.odds, " \
-        "bookie_bets.status, bookie_bets.payout, bookie_matches.title AS match_title, " \
+        "bookie_bets.status, bookie_bets.payout, bookie_bets.choice, " \
+        "bookie_matches.home_team, bookie_matches.away_team, " \
+        "bookie_matches.title AS match_title, " \
         "bookie_matches.updated_at AS settled_at"
       )
       .order("bookie_matches.updated_at ASC, bookie_bets.id ASC")
@@ -295,6 +297,8 @@ class BookieController < ApplicationController
     biggest_win = 0
     winning_odds_total = 0.0
     winning_odds_count = 0
+    team_profit = Hash.new(0)
+    team_bets = Hash.new(0)
     recent_form = []
     points_by_match_id = league_point_transactions.each_with_object({}) do |tx, memo|
       memo[tx.match_id] = tx.amount.to_i if tx.match_id
@@ -324,6 +328,17 @@ class BookieController < ApplicationController
       total_coin_delta += net_coin_delta
       biggest_win = [biggest_win, net_coin_delta].max
 
+      selected_team =
+        case bet.choice
+        when "home" then bet.attributes["home_team"]
+        when "away" then bet.attributes["away_team"]
+        end
+
+      if selected_team.present?
+        team_profit[selected_team] += net_coin_delta
+        team_bets[selected_team] += 1
+      end
+
       timeline << {
         label: bet.attributes["match_title"],
         date: settled_at.iso8601,
@@ -340,6 +355,9 @@ class BookieController < ApplicationController
       }
     end
 
+    best_team_name, best_team_profit =
+      team_profit.max_by { |team, profit| [profit, team_bets[team], team] }
+
     {
       summary: {
         total_settled_bets: total_settled_bets,
@@ -352,7 +370,9 @@ class BookieController < ApplicationController
         total_league_points: total_league_points,
         total_coin_delta: total_coin_delta,
         average_winning_odds: winning_odds_count.zero? ? nil : (winning_odds_total / winning_odds_count).round(2),
-        biggest_win: biggest_win
+        biggest_win: biggest_win,
+        best_team: best_team_name,
+        best_team_profit: best_team_profit.to_i
       },
       recent_form: recent_form.last(10),
       wins_losses: [
@@ -376,7 +396,9 @@ class BookieController < ApplicationController
         total_league_points: 0,
         total_coin_delta: 0,
         average_winning_odds: nil,
-        biggest_win: 0
+        biggest_win: 0,
+        best_team: nil,
+        best_team_profit: 0
       },
       recent_form: [],
       wins_losses: [

@@ -234,7 +234,7 @@
             <div class="bookie-stats-panel-header">
               <div>
                 <h3 class="bookie-stats-panel-title">Balance over time</h3>
-                <p class="bookie-stats-panel-desc">Your coin balance after recent settled events.</p>
+                <p class="bookie-stats-panel-desc">Your coin balance after each settled event — bonuses and active bets not included.</p>
               </div>
               <span class="bookie-stats-panel-meta">Last {{this.resultsPointsTimeline.length}} settled events</span>
             </div>
@@ -254,11 +254,11 @@
               <div class="bookie-stats-breakdown-bar" aria-hidden="true">
                 <div
                   class="bookie-stats-breakdown-segment is-win"
-                  style={{concat "width: " this.resultsCorrectWidth "%;"}}
+                  style={{this.resultsCorrectWidthStyle}}
                 ></div>
                 <div
                   class="bookie-stats-breakdown-segment is-loss"
-                  style={{concat "width: " this.resultsWrongWidth "%;"}}
+                  style={{this.resultsWrongWidthStyle}}
                 ></div>
               </div>
 
@@ -319,6 +319,16 @@
                 <span>Biggest win</span>
                 <strong class="bet-status-won">{{this.resultsBiggestWinText}}</strong>
               </div>
+              <div class="bookie-stats-summary-row">
+                <span>Best team</span>
+                <strong>{{this.resultsBestTeamText}}</strong>
+              </div>
+              {{#if this.resultsSummary.best_team}}
+                <div class="bookie-stats-summary-subrow">
+                  <span>Net result with {{this.resultsSummary.best_team}}</span>
+                  <strong class="{{this.resultsBestTeamProfitClass}}">{{this.resultsBestTeamProfitText}}</strong>
+                </div>
+              {{/if}}
             </div>
           </div>
         </div>
