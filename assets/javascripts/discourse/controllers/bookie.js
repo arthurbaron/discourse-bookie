@@ -338,6 +338,14 @@ export default class BookieController extends Controller {
     return 100 - this.resultsCorrectWidth;
   }
 
+  get resultsCorrectWidthStyle() {
+    return `width: ${this.resultsCorrectWidth}%;`;
+  }
+
+  get resultsWrongWidthStyle() {
+    return `width: ${this.resultsWrongWidth}%;`;
+  }
+
   get resultsHitRateText() {
     return `${this.resultsSummary.hit_rate || 0}%`;
   }
