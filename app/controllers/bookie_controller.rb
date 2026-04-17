@@ -433,6 +433,9 @@ class BookieController < ApplicationController
   end
 
   def serialize_match(match, user_bet = nil, score_data = nil)
+    total_bets = match.bookie_bets.count
+    total_coins = match.bookie_bets.sum(:amount)
+
     {
       id:         match.id,
       title:      match.title,
@@ -446,6 +449,8 @@ class BookieController < ApplicationController
       result:     match.result,
       can_bet:    match.can_bet?,
       user_bet:   user_bet ? serialize_bet(user_bet) : nil,
+      total_bets: total_bets,
+      total_coins: total_coins,
       league_points: score_data&.dig(:total),
       league_points_breakdown: score_data&.dig(:breakdown)
     }

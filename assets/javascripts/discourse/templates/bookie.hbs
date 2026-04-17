@@ -116,6 +116,11 @@
             {{/if}}
 
             <div class="bookie-match-deadline">Closes: {{match.formattedDeadline}}</div>
+            {{#if match.total_bets}}
+              <div class="bookie-match-market-stats">
+                {{match.total_coins}} {{this.currency}} ({{match.total_bets}} {{if (eq match.total_bets 1) "bet" "bets"}})
+              </div>
+            {{/if}}
 
           </div>
         {{/each}}

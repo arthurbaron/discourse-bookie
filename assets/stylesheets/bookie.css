@@ -201,6 +201,13 @@
   text-align: center;
 }
 
+.bookie-match-market-stats {
+  margin-top: -0.75rem;
+  font-size: 0.82rem;
+  color: var(--primary-medium);
+  text-align: center;
+}
+
 /* ── Bet form ─────────────────────────────────────────── */
 
 .bookie-odds-row {
