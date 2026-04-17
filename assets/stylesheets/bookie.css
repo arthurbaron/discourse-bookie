@@ -76,9 +76,13 @@
   display: flex;
   gap: 0.25rem;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
   border-bottom: 2px solid var(--primary-low);
   padding-bottom: 0;
+}
+
+.bookie-tabs-shell {
+  position: relative;
+  margin-bottom: 1.25rem;
 }
 
 .bookie-tab {
@@ -1172,6 +1176,10 @@
 /* ── Mobile ───────────────────────────────────────────── */
 
 @media (max-width: 600px) {
+  .bookie-page {
+    padding: 0.5rem 0.75rem 2rem;
+  }
+
   .bookie-header {
     flex-direction: row;
     align-items: center;
@@ -1399,13 +1407,35 @@
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;
-    padding-bottom: 0;
+    padding-bottom: 0.35rem;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-low-mid, var(--primary-low)) transparent;
   }
 
   .bookie-tabs::-webkit-scrollbar {
-    display: none;
+    display: block;
+    height: 4px;
+  }
+
+  .bookie-tabs::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .bookie-tabs::-webkit-scrollbar-thumb {
+    background: var(--primary-low-mid, var(--primary-low));
+    border-radius: 999px;
+  }
+
+  .bookie-tabs-shell::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0.35rem;
+    width: 2.5rem;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--secondary));
   }
 
   .bookie-tab {

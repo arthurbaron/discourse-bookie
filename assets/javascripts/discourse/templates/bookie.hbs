@@ -13,23 +13,25 @@
   </div>
 
   {{! ── Tabs ── }}
-  <div class="bookie-tabs">
-    <button class="bookie-tab {{if (eq this.activeTab 'matches') 'active'}}"
-            {{on "click" (fn this.setTab "matches")}}>Open events</button>
-    <button class="bookie-tab {{if (eq this.activeTab 'results') 'active'}}"
-            {{on "click" (fn this.setTab "results")}}>Results</button>
-    <button class="bookie-tab {{if (eq this.activeTab 'wallet') 'active'}}"
-            {{on "click" (fn this.setTab "wallet")}}>My wallet</button>
-    <button class="bookie-tab {{if (eq this.activeTab 'leaderboard') 'active'}}"
-            {{on "click" (fn this.setTab "leaderboard")}}>Standings</button>
-    <button class="bookie-tab {{if (eq this.activeTab 'rules') 'active'}}"
-            {{on "click" (fn this.setTab "rules")}}>Rules</button>
-    {{#if this.currentUser.staff}}
-      <button class="bookie-tab bookie-tab-admin {{if (eq this.activeTab 'admin') 'active'}}"
-              {{on "click" (fn this.setTab "admin")}}>
-        {{d-icon "wrench"}} Admin
-      </button>
-    {{/if}}
+  <div class="bookie-tabs-shell">
+    <div class="bookie-tabs">
+      <button class="bookie-tab {{if (eq this.activeTab 'matches') 'active'}}"
+              {{on "click" (fn this.setTab "matches")}}>Open events</button>
+      <button class="bookie-tab {{if (eq this.activeTab 'results') 'active'}}"
+              {{on "click" (fn this.setTab "results")}}>Results</button>
+      <button class="bookie-tab {{if (eq this.activeTab 'wallet') 'active'}}"
+              {{on "click" (fn this.setTab "wallet")}}>My wallet</button>
+      <button class="bookie-tab {{if (eq this.activeTab 'leaderboard') 'active'}}"
+              {{on "click" (fn this.setTab "leaderboard")}}>Standings</button>
+      <button class="bookie-tab {{if (eq this.activeTab 'rules') 'active'}}"
+              {{on "click" (fn this.setTab "rules")}}>Rules</button>
+      {{#if this.currentUser.staff}}
+        <button class="bookie-tab bookie-tab-admin {{if (eq this.activeTab 'admin') 'active'}}"
+                {{on "click" (fn this.setTab "admin")}}>
+          {{d-icon "wrench"}} Admin
+        </button>
+      {{/if}}
+    </div>
   </div>
 
   {{! ══════════════════════════════════════════════════ }}
