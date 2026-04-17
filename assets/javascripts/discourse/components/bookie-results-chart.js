@@ -53,6 +53,17 @@ function toRgba(color, alpha) {
   }
 }
 
+function isMobileViewport() {
+  return window.matchMedia?.("(max-width: 600px)")?.matches;
+}
+
+function formatCompactNumber(value) {
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(Number(value) || 0);
+}
+
 export default class BookieResultsChart extends Component {
   _chart = null;
 
@@ -193,7 +204,10 @@ export default class BookieResultsChart extends Component {
               maxTicksLimit: 4,
               color: textMuted,
               font: { size: 11 },
-              callback: (val) => `${val} ${this.currency || "coins"}`,
+              callback: (val) =>
+                isMobileViewport()
+                  ? formatCompactNumber(val)
+                  : `${val} ${this.currency || "coins"}`,
             },
           },
         },
