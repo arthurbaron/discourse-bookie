@@ -681,14 +681,44 @@
       <div class="bookie-form-row">
         <label>Home team</label>
         <input class="bookie-input" type="text"
+               autocomplete="off"
                value={{this.nmHomeTeam}} placeholder="e.g. Arsenal"
                {{on "input" (fn this.updateField "nmHomeTeam")}} />
+        {{#if this.newHomeClubSuggestions.length}}
+          <div class="bookie-club-suggestions">
+            {{#each this.newHomeClubSuggestions as |club|}}
+              <button class="bookie-club-suggestion-btn"
+                      type="button"
+                      {{on "click" (fn this.chooseClub "nmHomeTeam" club.name)}}>
+                <span>{{club.name}}</span>
+                {{#if club.aliases.length}}
+                  <span class="bookie-club-suggestion-meta">{{get club.aliases "0"}}</span>
+                {{/if}}
+              </button>
+            {{/each}}
+          </div>
+        {{/if}}
       </div>
       <div class="bookie-form-row">
         <label>Away team</label>
         <input class="bookie-input" type="text"
+               autocomplete="off"
                value={{this.nmAwayTeam}} placeholder="e.g. Chelsea"
                {{on "input" (fn this.updateField "nmAwayTeam")}} />
+        {{#if this.newAwayClubSuggestions.length}}
+          <div class="bookie-club-suggestions">
+            {{#each this.newAwayClubSuggestions as |club|}}
+              <button class="bookie-club-suggestion-btn"
+                      type="button"
+                      {{on "click" (fn this.chooseClub "nmAwayTeam" club.name)}}>
+                <span>{{club.name}}</span>
+                {{#if club.aliases.length}}
+                  <span class="bookie-club-suggestion-meta">{{get club.aliases "0"}}</span>
+                {{/if}}
+              </button>
+            {{/each}}
+          </div>
+        {{/if}}
       </div>
       <div class="bookie-form-row">
         <label>Title (optional — auto-generated if empty)</label>
@@ -742,14 +772,44 @@
               <div class="bookie-form-row">
                 <label>Home team</label>
                 <input class="bookie-input" type="text"
+                       autocomplete="off"
                        value={{this.emHomeTeam}}
                        {{on "input" (fn this.updateField "emHomeTeam")}} />
+                {{#if this.editHomeClubSuggestions.length}}
+                  <div class="bookie-club-suggestions">
+                    {{#each this.editHomeClubSuggestions as |club|}}
+                      <button class="bookie-club-suggestion-btn"
+                              type="button"
+                              {{on "click" (fn this.chooseClub "emHomeTeam" club.name)}}>
+                        <span>{{club.name}}</span>
+                        {{#if club.aliases.length}}
+                          <span class="bookie-club-suggestion-meta">{{get club.aliases "0"}}</span>
+                        {{/if}}
+                      </button>
+                    {{/each}}
+                  </div>
+                {{/if}}
               </div>
               <div class="bookie-form-row">
                 <label>Away team</label>
                 <input class="bookie-input" type="text"
+                       autocomplete="off"
                        value={{this.emAwayTeam}}
                        {{on "input" (fn this.updateField "emAwayTeam")}} />
+                {{#if this.editAwayClubSuggestions.length}}
+                  <div class="bookie-club-suggestions">
+                    {{#each this.editAwayClubSuggestions as |club|}}
+                      <button class="bookie-club-suggestion-btn"
+                              type="button"
+                              {{on "click" (fn this.chooseClub "emAwayTeam" club.name)}}>
+                        <span>{{club.name}}</span>
+                        {{#if club.aliases.length}}
+                          <span class="bookie-club-suggestion-meta">{{get club.aliases "0"}}</span>
+                        {{/if}}
+                      </button>
+                    {{/each}}
+                  </div>
+                {{/if}}
               </div>
               <div class="bookie-form-row bookie-admin-edit-title">
                 <label>Title</label>
@@ -831,16 +891,19 @@
                   <span class="bookie-settle-label">Settle as:</span>
                   <div class="bookie-admin-settle-buttons">
                     <button class="bookie-admin-settle-btn bookie-admin-settle-btn-home"
+                            type="button"
                             style="border-radius: 2px; font-weight: 400;"
                             {{on "click" (fn this.settleMatch match "home")}}>
                       Home wins
                     </button>
                     <button class="bookie-admin-settle-btn bookie-admin-settle-btn-draw"
+                            type="button"
                             style="border-radius: 2px; font-weight: 400;"
                             {{on "click" (fn this.settleMatch match "draw")}}>
                       Draw
                     </button>
                     <button class="bookie-admin-settle-btn bookie-admin-settle-btn-away"
+                            type="button"
                             style="border-radius: 2px; font-weight: 400;"
                             {{on "click" (fn this.settleMatch match "away")}}>
                       Away wins

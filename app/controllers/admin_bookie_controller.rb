@@ -5,16 +5,25 @@ class AdminBookieController < Admin::AdminController
   def matches
     open_matches    = BookieMatch.unsettled
     settled_matches = BookieMatch.settled.limit(20)
+    clubs           = BookieClub.includes(:bookie_club_aliases).order(:name)
 
     render json: {
       matches:         open_matches.map { |m| serialize_match(m) },
-      settled_matches: settled_matches.map { |m| serialize_match(m) }
+      settled_matches: settled_matches.map { |m| serialize_match(m) },
+      clubs:           clubs.map { |club| serialize_club(club) }
     }
   end
 
   # POST /admin/plugins/bookie/matches
   def create_match
-    match = BookieMatch.new(match_params)
+    home_result = BookieClubResolver.find_or_create!(params.dig(:match, :home_team))
+    away_result = BookieClubResolver.find_or_create!(params.dig(:match, :away_team))
+    attrs = match_params.to_h
+    attrs[:home_team] = home_result.canonical_name if home_result.canonical_name.present?
+    attrs[:away_team] = away_result.canonical_name if away_result.canonical_name.present?
+    attrs[:title] = "#{attrs[:home_team]} vs #{attrs[:away_team]}" if attrs[:title].blank?
+
+    match = BookieMatch.new(attrs)
 
     if match.save
       BookieNotifier.notify_new_match_available!(match: match)
@@ -201,6 +210,8 @@ class AdminBookieController < Admin::AdminController
       title:        match.title,
       home_team:    match.home_team,
       away_team:    match.away_team,
+      home_club_id: match.home_club_id,
+      away_club_id: match.away_club_id,
       odds_home:    match.odds_home.to_f,
       odds_draw:    match.odds_draw.to_f,
       odds_away:    match.odds_away.to_f,
@@ -212,6 +223,14 @@ class AdminBookieController < Admin::AdminController
       bets_home:    bets_by_choice["home"] || 0,
       bets_draw:    bets_by_choice["draw"] || 0,
       bets_away:    bets_by_choice["away"] || 0
+    }
+  end
+
+  def serialize_club(club)
+    {
+      id: club.id,
+      name: club.name,
+      aliases: club.bookie_club_aliases.order(:name).pluck(:name)
     }
   end
 

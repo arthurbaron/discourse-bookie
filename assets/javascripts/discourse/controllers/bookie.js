@@ -144,10 +144,13 @@ function defaultResultsStats() {
       hit_rate: 0,
       current_streak: 0,
       best_streak: 0,
+      periods_won: 0,
       total_league_points: 0,
       total_coin_delta: 0,
       average_winning_odds: null,
       biggest_win: 0,
+      best_team: null,
+      best_team_profit: 0,
     },
     recent_form: [],
     wins_losses: [
@@ -211,6 +214,29 @@ function buildAreaPath(points) {
   return `${linePath} L ${last.x} ${baseY} L ${first.x} ${baseY} Z`;
 }
 
+function normalizeClubQuery(value) {
+  return value.toLowerCase().trim();
+}
+
+function clubSuggestionsFor(clubs, query) {
+  const normalized = normalizeClubQuery(query);
+  if (!normalized) {
+    return [];
+  }
+
+  return (clubs || [])
+    .filter((club) => {
+      if (normalizeClubQuery(club.name).includes(normalized)) {
+        return true;
+      }
+
+      return (club.aliases || []).some((alias) =>
+        normalizeClubQuery(alias).includes(normalized)
+      );
+    })
+    .slice(0, 6);
+}
+
 export default class BookieController extends Controller {
   @service currentUser;
   queryParams = [{ activeTab: "tab" }];
@@ -234,6 +260,7 @@ export default class BookieController extends Controller {
 
   // Admin state
   @tracked adminMatches = [];
+  @tracked adminClubs = [];
   @tracked adminError = null;
   @tracked adminSubTab = "events";
   @tracked seasonKey = null;
@@ -426,6 +453,22 @@ export default class BookieController extends Controller {
       : "bet-status-lost";
   }
 
+  get newHomeClubSuggestions() {
+    return clubSuggestionsFor(this.adminClubs, this.nmHomeTeam);
+  }
+
+  get newAwayClubSuggestions() {
+    return clubSuggestionsFor(this.adminClubs, this.nmAwayTeam);
+  }
+
+  get editHomeClubSuggestions() {
+    return clubSuggestionsFor(this.adminClubs, this.emHomeTeam);
+  }
+
+  get editAwayClubSuggestions() {
+    return clubSuggestionsFor(this.adminClubs, this.emAwayTeam);
+  }
+
   setup(model) {
     const currency = model.currency || "coins";
     this.matches = (model.matches || []).map((m) => new MatchState({ ...m, currency }));
@@ -609,6 +652,7 @@ export default class BookieController extends Controller {
         formattedDeadline: formatDate(m.deadline),
         deadlineLocal: formatDateTimeLocal(m.deadline),
       }));
+      this.adminClubs = data.clubs || [];
     } catch (_e) {
       this.adminError = "Failed to load events.";
     }
@@ -617,6 +661,11 @@ export default class BookieController extends Controller {
   @action
   updateField(field, event) {
     this[field] = event.target.value;
+  }
+
+  @action
+  chooseClub(field, clubName) {
+    this[field] = clubName;
   }
 
   @action
@@ -660,6 +709,7 @@ export default class BookieController extends Controller {
         },
         ...this.adminMatches,
       ];
+      await this.loadAdminMatches();
 
       // Reset form
       this.nmHomeTeam = "";
@@ -796,6 +846,7 @@ export default class BookieController extends Controller {
       this.adminMatches = this.adminMatches.map((item) =>
         item.id === match.id ? updated : item
       );
+      await this.loadAdminMatches();
       this.cancelEditingMatch();
       this.adminError = null;
     } catch (e) {

@@ -574,6 +574,44 @@
   font-weight: 600;
 }
 
+.bookie-club-suggestions {
+  margin-top: 0.45rem;
+  border: 1px solid var(--primary-low);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--secondary);
+}
+
+.bookie-club-suggestion-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--primary-low);
+  background: transparent;
+  color: var(--primary);
+  text-align: left;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.bookie-club-suggestion-btn:last-child {
+  border-bottom: 0;
+}
+
+.bookie-club-suggestion-btn:hover {
+  background: var(--primary-very-low);
+}
+
+.bookie-club-suggestion-meta {
+  color: var(--primary-medium);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
 .bookie-stats-breakdown-dot {
   width: 9px;
   height: 9px;
@@ -956,6 +994,8 @@
   align-items: center;
   gap: 0.75rem;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .bookie-admin-icon-btn {

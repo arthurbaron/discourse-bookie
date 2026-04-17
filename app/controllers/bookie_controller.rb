@@ -250,16 +250,10 @@ class BookieController < ApplicationController
 
   def results_stats_for(user_id)
     settled_bets = BookieBet
+      .includes(bookie_match: %i[home_club away_club])
       .joins(:bookie_match)
       .where(user_id: user_id, status: %w[won lost])
       .where(bookie_matches: { status: "settled" })
-      .select(
-        "bookie_bets.id, bookie_bets.match_id, bookie_bets.amount, bookie_bets.odds, " \
-        "bookie_bets.status, bookie_bets.payout, bookie_bets.choice, " \
-        "bookie_matches.home_team, bookie_matches.away_team, " \
-        "bookie_matches.title AS match_title, " \
-        "bookie_matches.updated_at AS settled_at"
-      )
       .order("bookie_matches.updated_at ASC, bookie_bets.id ASC")
 
     league_point_transactions = BookieTransaction
@@ -309,7 +303,8 @@ class BookieController < ApplicationController
     settled_bets.each do |bet|
       won = bet.status == "won"
       points = points_by_match_id[bet.match_id].to_i
-      settled_at = bet.attributes["settled_at"] || bet.updated_at
+      match = bet.bookie_match
+      settled_at = match&.updated_at || bet.updated_at
 
       total_settled_bets += 1
 
@@ -330,8 +325,8 @@ class BookieController < ApplicationController
 
       selected_team =
         case bet.choice
-        when "home" then bet.attributes["home_team"]
-        when "away" then bet.attributes["away_team"]
+        when "home" then match&.home_canonical_name
+        when "away" then match&.away_canonical_name
         end
 
       if selected_team.present?
@@ -340,7 +335,7 @@ class BookieController < ApplicationController
       end
 
       timeline << {
-        label: bet.attributes["match_title"],
+        label: match&.title,
         date: settled_at.iso8601,
         delta_points: net_coin_delta,
         cumulative_points: balance_checkpoints[bet.match_id].to_i,
@@ -349,7 +344,7 @@ class BookieController < ApplicationController
 
       recent_form << {
         result: won ? "W" : "L",
-        label: bet.attributes["match_title"],
+        label: match&.title,
         delta_points: points,
         coin_delta: net_coin_delta
       }

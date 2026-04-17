@@ -13,10 +13,13 @@ extend_content_security_policy(
 
 after_initialize do
   [
+    "app/models/bookie_club",
+    "app/models/bookie_club_alias",
     "app/models/bookie_match",
     "app/models/bookie_wallet",
     "app/models/bookie_bet",
     "app/models/bookie_transaction",
+    "app/services/bookie_club_resolver",
     "app/services/bookie_notifier",
     "app/models/bookie_league_entry",
     "app/models/bookie_period_snapshot",
