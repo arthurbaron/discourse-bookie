@@ -34,6 +34,43 @@
     </div>
   </div>
 
+  <nav class="bookie-mobile-tabbar" aria-label="Bookie mobile navigation">
+    <div class="bookie-mobile-tabbar-inner">
+      <button type="button"
+              class="bookie-mobile-tab {{if (eq this.activeTab 'matches') 'active'}}"
+              {{on "click" (fn this.setTab "matches")}}>
+        {{d-icon "list"}}
+        <span>Events</span>
+      </button>
+      <button type="button"
+              class="bookie-mobile-tab {{if (eq this.activeTab 'results') 'active'}}"
+              {{on "click" (fn this.setTab "results")}}>
+        {{d-icon "chart-line"}}
+        <span>Results</span>
+      </button>
+      <button type="button"
+              class="bookie-mobile-tab {{if (eq this.activeTab 'wallet') 'active'}}"
+              {{on "click" (fn this.setTab "wallet")}}>
+        {{d-icon "book"}}
+        <span>Wallet</span>
+      </button>
+      <button type="button"
+              class="bookie-mobile-tab {{if (eq this.activeTab 'leaderboard') 'active'}}"
+              {{on "click" (fn this.setTab "leaderboard")}}>
+        {{d-icon "trophy"}}
+        <span>Standings</span>
+      </button>
+      {{#if this.currentUser.staff}}
+        <button type="button"
+                class="bookie-mobile-tab {{if (eq this.activeTab 'admin') 'active'}}"
+                {{on "click" (fn this.setTab "admin")}}>
+          {{d-icon "wrench"}}
+          <span>Admin</span>
+        </button>
+      {{/if}}
+    </div>
+  </nav>
+
   {{! ══════════════════════════════════════════════════ }}
   {{! PANEL: Open matches                                }}
   {{! ══════════════════════════════════════════════════ }}
@@ -402,7 +439,14 @@
       <div class="bookie-standings-card-header">
         <div>
           <h2 class="bookie-standings-title">League Table</h2>
-          <p class="bookie-standings-desc">Resets every two months. Rewards form, consistency and streaks.</p>
+          <p class="bookie-standings-desc">
+            Resets every two months. Rewards form, consistency and streaks.
+            <button type="button"
+                    class="bookie-inline-link"
+                    {{on "click" (fn this.setTab "rules")}}>
+              Read the rules
+            </button>
+          </p>
         </div>
         {{#if this.currentPeriodLabel}}
           <span class="bookie-period-pill">Period: {{this.currentPeriodLabel}}</span>
@@ -489,7 +533,14 @@
       <div class="bookie-standings-card-header">
         <div>
           <h2 class="bookie-standings-title">Richest Gooner</h2>
-          <p class="bookie-standings-desc">Runs across the full season. Ranked by total coins.</p>
+          <p class="bookie-standings-desc">
+            Runs across the full season. Ranked by total coins.
+            <button type="button"
+                    class="bookie-inline-link"
+                    {{on "click" (fn this.setTab "rules")}}>
+              Read the rules
+            </button>
+          </p>
         </div>
         <span class="bookie-period-pill">Season-long ranking</span>
       </div>

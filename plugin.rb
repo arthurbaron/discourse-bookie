@@ -6,6 +6,7 @@
 
 register_asset "stylesheets/bookie.css"
 register_svg_icon "trophy"
+register_svg_icon "chart-line"
 
 extend_content_security_policy(
   script_src: %w[https://cdn.jsdelivr.net]
