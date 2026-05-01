@@ -184,6 +184,10 @@
               {{on "click" (fn this.setResultsSubTab "stats")}}>
         Stats
       </button>
+      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'achievements') 'active'}}"
+              {{on "click" (fn this.setResultsSubTab "achievements")}}>
+        Achievements
+      </button>
     </div>
 
     {{#if (eq this.resultsSubTab "my-results")}}
@@ -244,7 +248,7 @@
       {{else}}
         <div class="bookie-empty">No settled events yet.</div>
       {{/if}}
-    {{else}}
+    {{else if (eq this.resultsSubTab "stats")}}
       {{#if this.resultsHasStats}}
         <div class="bookie-results-stats">
           <div class="bookie-results-stats-grid">
@@ -379,6 +383,40 @@
       {{else}}
         <div class="bookie-empty">No personal stats yet — settle a few events first.</div>
       {{/if}}
+    {{else if (eq this.resultsSubTab "achievements")}}
+      <div class="bookie-stats-panel bookie-achievements-panel">
+        <div class="bookie-stats-panel-header">
+          <div>
+            <h3 class="bookie-stats-panel-title">Achievements</h3>
+            <p class="bookie-stats-panel-desc">Unlock milestones as you play Bookie.</p>
+          </div>
+          <span class="bookie-stats-panel-meta">
+            {{this.resultsAchievementsUnlockedCount}} / {{this.resultsAchievementsTotalCount}} unlocked
+          </span>
+        </div>
+
+        <div class="bookie-achievements-grid">
+          {{#each this.resultsAchievements as |achievement|}}
+            <div class="bookie-achievement-card {{if achievement.earned 'is-earned' 'is-locked'}}">
+              <div class="bookie-achievement-image-wrap">
+                <img
+                  class="bookie-achievement-image"
+                  src={{achievement.image_url}}
+                  alt=""
+                  loading="lazy"
+                />
+              </div>
+              <div class="bookie-achievement-copy">
+                <h4 class="bookie-achievement-title">{{achievement.title}}</h4>
+                <p class="bookie-achievement-desc">{{achievement.description}}</p>
+              </div>
+              <span class="bookie-achievement-status">
+                {{if achievement.earned "Unlocked" "Locked"}}
+              </span>
+            </div>
+          {{/each}}
+        </div>
+      </div>
     {{/if}}
   </div>
   {{/if}}

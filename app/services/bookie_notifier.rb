@@ -3,6 +3,7 @@ class BookieNotifier
   RESULTS_LINK = "/bookie?tab=results".freeze
   MATCHES_LINK = "/bookie?tab=matches".freeze
   NEW_MATCH_COOLDOWN = 5.minutes
+  ACHIEVEMENT_MESSAGE = "bookie_achievement_unlocked".freeze
 
   def self.notify_match_settled!(match:, bet:, won:, currency_name:)
     create_custom_notification!(
@@ -13,6 +14,38 @@ class BookieNotifier
       text: "Bookie — Bets settled",
       link: RESULTS_LINK
     )
+
+    notify_achievement_unlocks!(user_id: bet.user_id)
+  end
+
+  def self.notify_achievement_unlocks!(user_id:)
+    achievements = BookieAchievements.earned_for(user_id)
+    return if achievements.empty?
+
+    notified_keys = Notification
+      .where(
+        notification_type: Notification.types[:custom],
+        user_id: user_id
+      )
+      .where("data::json ->> 'message' = ?", ACHIEVEMENT_MESSAGE)
+      .pluck(Arel.sql("data::json ->> 'achievement_key'"))
+
+    achievements.each do |achievement|
+      next if notified_keys.include?(achievement[:key])
+
+      create_custom_notification!(
+        user_id: user_id,
+        message: ACHIEVEMENT_MESSAGE,
+        label: DISPLAY_USERNAME,
+        description: "Achievement unlocked: #{achievement[:title]}",
+        text: "Bookie — Achievement unlocked: #{achievement[:title]}",
+        link: RESULTS_LINK,
+        extra_data: {
+          achievement_key: achievement[:key],
+          achievement_title: achievement[:title]
+        }
+      )
+    end
   end
 
   def self.notify_new_match_available!(match:)
@@ -53,7 +86,8 @@ class BookieNotifier
     label:,
     description:,
     text:,
-    link:
+    link:,
+    extra_data: {}
   )
     Notification.create!(
       notification_type: Notification.types[:custom],
@@ -65,7 +99,7 @@ class BookieNotifier
         text: text,
         link: link,
         display_username: DISPLAY_USERNAME
-      }.to_json
+      }.merge(extra_data).to_json
     )
   end
 end

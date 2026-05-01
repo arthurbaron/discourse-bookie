@@ -5,6 +5,7 @@ const BOOKIE_MESSAGES = new Set([
   "bookie_match_won",
   "bookie_match_lost",
   "bookie_new_match",
+  "bookie_achievement_unlocked",
 ]);
 
 export default apiInitializer("1.3.0", (api) => {
@@ -12,9 +13,15 @@ export default apiInitializer("1.3.0", (api) => {
     return;
   }
 
-  function bookieDescription(message) {
+  function bookieDescription(notification) {
+    const message = notification.data.message;
+
     if (message === "bookie_new_match") {
       return "New events available";
+    }
+
+    if (message === "bookie_achievement_unlocked") {
+      return notification.data.description || "Achievement unlocked";
     }
 
     return "Bets settled";
@@ -63,7 +70,7 @@ export default apiInitializer("1.3.0", (api) => {
           return super.description;
         }
 
-        return bookieDescription(this.notification.data.message);
+        return bookieDescription(this.notification);
       }
     };
   });

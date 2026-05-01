@@ -735,6 +735,101 @@
   gap: 0.7rem;
 }
 
+.bookie-achievements-panel {
+  overflow: hidden;
+}
+
+.bookie-achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.9rem;
+}
+
+.bookie-achievement-card {
+  position: relative;
+  display: flex;
+  min-height: 230px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 0.8rem;
+  border: 1px solid var(--primary-low);
+  border-radius: 12px;
+  background: var(--primary-very-low);
+  text-align: center;
+}
+
+.bookie-achievement-card.is-earned {
+  border-color: color-mix(in srgb, var(--tertiary) 55%, var(--primary-low));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tertiary) 10%, transparent);
+}
+
+.bookie-achievement-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+}
+
+.bookie-achievement-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bookie-achievement-card.is-earned .bookie-achievement-image {
+  transform: translateY(-2px);
+}
+
+.bookie-achievement-card.is-locked .bookie-achievement-image {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+
+.bookie-achievement-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.bookie-achievement-title {
+  margin: 0;
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.bookie-achievement-desc {
+  margin: 0.35rem 0 0;
+  color: var(--primary-medium);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.bookie-achievement-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--primary-low);
+  color: var(--primary-medium);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.bookie-achievement-card.is-earned .bookie-achievement-status {
+  background: color-mix(in srgb, var(--tertiary) 18%, transparent);
+  color: var(--tertiary);
+}
+
 @media (max-width: 900px) {
   .bookie-results-stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1388,6 +1483,29 @@
 
   .bookie-stats-form-row {
     gap: 0.35rem;
+  }
+
+  .bookie-achievements-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .bookie-achievement-card {
+    min-height: 205px;
+    padding: 0.85rem 0.65rem;
+  }
+
+  .bookie-achievement-image-wrap {
+    width: 86px;
+    height: 86px;
+  }
+
+  .bookie-achievement-title {
+    font-size: 0.86rem;
+  }
+
+  .bookie-achievement-desc {
+    font-size: 0.72rem;
   }
 
   .bookie-lb-panel {

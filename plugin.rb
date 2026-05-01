@@ -20,6 +20,7 @@ after_initialize do
     "app/models/bookie_wallet",
     "app/models/bookie_bet",
     "app/models/bookie_transaction",
+    "app/services/bookie_achievements",
     "app/services/bookie_club_resolver",
     "app/services/bookie_notifier",
     "app/models/bookie_league_entry",

@@ -160,6 +160,13 @@ class AdminBookieController < Admin::AdminController
     end
 
     BookieLeagueEntry.close_period!(period_key)
+    BookiePeriodSnapshot
+      .where(period_key: period_key)
+      .pluck(:user_id)
+      .each do |user_id|
+        BookieNotifier.notify_achievement_unlocks!(user_id: user_id)
+      end
+
     render json: {
       success: true,
       period_key: period_key,
@@ -179,6 +186,13 @@ class AdminBookieController < Admin::AdminController
     end
 
     BookieSeasonSnapshot.close_season!(season_key)
+    BookieSeasonSnapshot
+      .where(season_key: season_key)
+      .pluck(:user_id)
+      .each do |user_id|
+        BookieNotifier.notify_achievement_unlocks!(user_id: user_id)
+      end
+
     render json: { success: true, season_key: season_key }
   rescue => e
     log_internal_error("end_season", e)

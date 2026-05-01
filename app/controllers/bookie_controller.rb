@@ -374,7 +374,8 @@ class BookieController < ApplicationController
         { label: "Correct", value: wins },
         { label: "Wrong", value: losses }
       ],
-      points_timeline: timeline.last(20)
+      points_timeline: timeline.last(20),
+      achievements: BookieAchievements.payload_for(user_id)
     }
   end
 
@@ -400,7 +401,8 @@ class BookieController < ApplicationController
         { label: "Correct", value: 0 },
         { label: "Wrong", value: 0 }
       ],
-      points_timeline: []
+      points_timeline: [],
+      achievements: BookieAchievements.payload_for(nil)
     }
   end
 

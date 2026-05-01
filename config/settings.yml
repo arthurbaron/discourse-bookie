@@ -19,3 +19,7 @@ bookie_currency_name:
   default: "coins"
   client: true
   type: string
+
+bookie_achievements_started_at:
+  default: "2026-06-01T00:00:00Z"
+  type: string

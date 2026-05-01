@@ -158,6 +158,7 @@ function defaultResultsStats() {
       { label: "Wrong", value: 0 },
     ],
     points_timeline: [],
+    achievements: [],
   };
 }
 
@@ -307,6 +308,19 @@ export default class BookieController extends Controller {
 
   get resultsPointsTimeline() {
     return this.resultsStats?.points_timeline || [];
+  }
+
+  get resultsAchievements() {
+    return this.resultsStats?.achievements || [];
+  }
+
+  get resultsAchievementsTotalCount() {
+    return this.resultsAchievements.length;
+  }
+
+  get resultsAchievementsUnlockedCount() {
+    return this.resultsAchievements.filter((achievement) => achievement.earned)
+      .length;
   }
 
   get resultsChartPoints() {
