@@ -21,5 +21,5 @@ bookie_currency_name:
   type: string
 
 bookie_achievements_started_at:
-  default: "2026-06-01T00:00:00Z"
+  default: "2026-05-02T07:30:00Z"
   type: string

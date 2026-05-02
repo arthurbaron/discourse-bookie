@@ -62,7 +62,7 @@ class BookieAchievements
     }
   ].freeze
 
-  DEFAULT_STARTED_AT = "2026-06-01T00:00:00Z".freeze
+  DEFAULT_STARTED_AT = "2026-05-02T07:30:00Z".freeze
 
   def self.payload_for(user_id)
     earned_keys = earned_keys_for(user_id)
