@@ -37,11 +37,12 @@ after_initialize do
     get "/bookie" => "bookie_page#index"
 
     # Public API
-    get    "/bookie/matches"    => "bookie#matches"
-    get    "/bookie/wallet"     => "bookie#wallet"
-    get    "/bookie/leaderboard" => "bookie#leaderboard"
-    post   "/bookie/bets"       => "bookie#place_bet"
-    delete "/bookie/bets/:id"   => "bookie#cancel_bet"
+    get    "/bookie/matches"       => "bookie#matches"
+    get    "/bookie/wallet"        => "bookie#wallet"
+    get    "/bookie/leaderboard"   => "bookie#leaderboard"
+    post   "/bookie/bets"          => "bookie#place_bet"
+    delete "/bookie/bets/:id"      => "bookie#cancel_bet"
+    put    "/bookie/notifications" => "bookie#update_notifications"
 
     # Admin API
     scope "/admin/plugins/bookie", constraints: StaffConstraint.new do

@@ -5,7 +5,15 @@ class BookieNotifier
   NEW_MATCH_COOLDOWN = 5.minutes
   ACHIEVEMENT_MESSAGE = "bookie_achievement_unlocked".freeze
 
+  def self.notifications_enabled?(user_id)
+    user = User.find_by(id: user_id)
+    return false unless user
+    user.custom_fields["bookie_notifications_enabled"] != "false"
+  end
+
   def self.notify_match_settled!(match:, bet:, won:, currency_name:)
+    return unless notifications_enabled?(bet.user_id)
+
     create_custom_notification!(
       user_id: bet.user_id,
       message: won ? "bookie_match_won" : "bookie_match_lost",
@@ -19,6 +27,8 @@ class BookieNotifier
   end
 
   def self.notify_achievement_unlocks!(user_id:)
+    return unless notifications_enabled?(user_id)
+
     achievements = BookieAchievements.earned_for(user_id)
     return if achievements.empty?
 
@@ -50,6 +60,9 @@ class BookieNotifier
 
   def self.notify_new_match_available!(match:)
     interested_user_ids = BookieBet.distinct.pluck(:user_id)
+    return if interested_user_ids.empty?
+
+    interested_user_ids = interested_user_ids.select { |id| notifications_enabled?(id) }
     return if interested_user_ids.empty?
 
     recently_notified_user_ids =

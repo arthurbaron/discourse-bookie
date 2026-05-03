@@ -251,6 +251,7 @@ export default class BookieController extends Controller {
   @tracked resultsStats = defaultResultsStats();
   @tracked walletTransactions = [];
   @tracked walletBalance = 0;
+  @tracked notificationsEnabled = true;
   // Standings state
   @tracked standingsTab = "league-table";
   @tracked leagueTable = [];
@@ -494,6 +495,7 @@ export default class BookieController extends Controller {
     this.currency = currency;
     this.resultsSubTab = "my-results";
     this.walletBalance = model.wallet?.balance || 0;
+    this.notificationsEnabled = model.wallet?.notifications_enabled !== false;
     this.walletTransactions = (model.wallet?.transactions || []).map((tx) => ({
       ...tx,
       formattedDate: formatDate(tx.date),
@@ -632,6 +634,7 @@ export default class BookieController extends Controller {
     try {
       const data = await ajax("/bookie/wallet.json");
       this.walletBalance = data.balance;
+      this.notificationsEnabled = data.notifications_enabled !== false;
       this.walletTransactions = (data.transactions || []).map((tx) => ({
         ...tx,
         formattedDate: formatDate(tx.date),
@@ -639,6 +642,21 @@ export default class BookieController extends Controller {
       }));
     } catch (_e) {
       // silently fail
+    }
+  }
+
+  @action
+  async toggleNotifications() {
+    const enabled = !this.notificationsEnabled;
+    this.notificationsEnabled = enabled;
+    try {
+      const result = await ajax("/bookie/notifications.json", {
+        type: "PUT",
+        data: { enabled },
+      });
+      this.notificationsEnabled = result.notifications_enabled !== false;
+    } catch (_e) {
+      this.notificationsEnabled = !enabled;
     }
   }
 

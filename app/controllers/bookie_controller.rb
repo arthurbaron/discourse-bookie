@@ -40,10 +40,22 @@ class BookieController < ApplicationController
       .limit(50)
 
     render json: {
-      balance:      wallet.balance,
-      currency:     bookie_currency,
-      transactions: transactions.map { |t| serialize_transaction(t) }
+      balance:               wallet.balance,
+      currency:              bookie_currency,
+      transactions:          transactions.map { |t| serialize_transaction(t) },
+      notifications_enabled: bookie_notifications_enabled?(current_user)
     }
+  end
+
+  # PUT /bookie/notifications
+  def update_notifications
+    enabled = ActiveModel::Type::Boolean.new.cast(params[:enabled])
+    enabled = true if enabled.nil?
+    current_user.upsert_custom_fields(
+      "bookie_notifications_enabled" => enabled.to_s
+    )
+
+    render json: { notifications_enabled: enabled }
   end
 
   # GET /bookie/leaderboard
@@ -201,6 +213,10 @@ class BookieController < ApplicationController
   def ensure_bookie_enabled
     enabled = SiteSetting.bookie_enabled rescue true
     raise Discourse::NotFound unless enabled
+  end
+
+  def bookie_notifications_enabled?(user)
+    user.custom_fields["bookie_notifications_enabled"] != "false"
   end
 
   def render_error(msg, status = 422)

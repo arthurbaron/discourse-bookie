@@ -429,6 +429,17 @@
     <div class="bookie-wallet-balance">
       Balance: <strong>{{this.walletBalance}} {{this.currency}}</strong>
     </div>
+
+    <div class="bookie-notification-pref">
+      <span class="bookie-notification-pref-label">Receive notifications</span>
+      <button
+        type="button"
+        class="bookie-toggle-btn {{if this.notificationsEnabled 'is-on'}}"
+        {{on "click" this.toggleNotifications}}>
+        <span class="bookie-toggle-knob"></span>
+      </button>
+    </div>
+
     <h3>Recent transactions</h3>
     {{#if this.walletTransactions.length}}
       <table class="bookie-tx-table">
