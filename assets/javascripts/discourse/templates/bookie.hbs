@@ -197,14 +197,21 @@
             <div class="bookie-result-row {{if match.detailsExpanded 'is-expanded'}} {{if match.hasLeagueBreakdown 'has-breakdown'}}">
               <div class="bookie-result-main">
                 <div class="bookie-result-teams">
-                  {{match.home_team}} vs {{match.away_team}}
+                  <span class="bookie-result-match">{{match.home_team}} vs {{match.away_team}}</span>
+                  {{#if match.userBet}}
+                    <span class="bookie-result-pick {{match.pickStatusClass}}">
+                      <span class="bookie-result-pick-icon">{{match.pickStatusIcon}}</span>
+                      You picked {{match.userBetLabel}} @ {{match.userBetOddsText}}
+                    </span>
+                  {{/if}}
                 </div>
 
                 <div class="bookie-result-trailing">
+                  <div class="bookie-result-outcome">
+                    <span class="bookie-result-outcome-label">Result:</span>
+                    <span class="bookie-result-outcome-value">{{match.resultText}}</span>
+                  </div>
                   {{#if match.userBet}}
-                    <div class="bookie-result-outcome">
-                      {{match.resultText}}
-                    </div>
                     <div class="bookie-result-summary">
                       <div class="bookie-result-score {{match.coinDeltaClass}}">
                         {{match.coinDeltaText}}
@@ -215,10 +222,6 @@
                           {{match.pointsDeltaText}}
                         </div>
                       {{/if}}
-                    </div>
-                  {{else}}
-                    <div class="bookie-result-outcome">
-                      {{match.resultText}}
                     </div>
                   {{/if}}
 
