@@ -1,4 +1,6 @@
-class AdminBookieController < Admin::AdminController
+class AdminBookieController < ApplicationController
+  requires_login
+  before_action :ensure_staff
   before_action :find_match, only: %i[update_match destroy_match settle_match]
 
   # GET /admin/plugins/bookie/matches
