@@ -413,7 +413,7 @@ class BookieController < ApplicationController
     settled_bets = BookieBet
       .joins(:bookie_match)
       .where(user_id: user_id, status: %w[won lost])
-      .where(bookie_matches: { status: "settled" })
+      .where(bookie_matches: { status: "settled", sport: "football" })
       .select("bookie_bets.id, bookie_bets.match_id, bookie_bets.status, bookie_bets.odds, bookie_matches.updated_at AS settled_at")
       .order("bookie_matches.updated_at ASC, bookie_bets.id ASC")
 
