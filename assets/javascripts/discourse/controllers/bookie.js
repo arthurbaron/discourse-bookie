@@ -67,6 +67,21 @@ class MatchState {
     return `bet-status-${this._userBet.status}`;
   }
 
+  get pickStatusClass() {
+    if (!this._userBet) return "";
+    return this._userBet.status === "won" ? "is-correct" : "is-wrong";
+  }
+
+  get pickStatusIcon() {
+    if (!this._userBet) return "";
+    return this._userBet.status === "won" ? "✓" : "✗";
+  }
+
+  get userBetOddsText() {
+    if (!this._userBet) return "";
+    return `${Number(this._userBet.odds).toFixed(2)}x`;
+  }
+
   get hasLeaguePoints() {
     return Number.isInteger(this.league_points);
   }

@@ -405,10 +405,37 @@
 }
 
 .bookie-result-teams {
-  font-size: 1rem;
-  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   flex: 1;
   min-width: 200px;
+}
+
+.bookie-result-match {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.bookie-result-pick {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--primary-medium);
+}
+
+.bookie-result-pick-icon {
+  font-weight: 700;
+}
+
+.bookie-result-pick.is-correct .bookie-result-pick-icon {
+  color: var(--success);
+}
+
+.bookie-result-pick.is-wrong .bookie-result-pick-icon {
+  color: var(--danger);
 }
 
 .bookie-result-trailing {
@@ -425,6 +452,15 @@
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
+}
+
+.bookie-result-outcome-label {
+  color: var(--primary-medium);
+}
+
+.bookie-result-outcome-value {
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .bookie-result-summary {
