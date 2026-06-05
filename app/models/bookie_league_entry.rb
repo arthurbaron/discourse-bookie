@@ -29,6 +29,15 @@ class BookieLeagueEntry < ActiveRecord::Base
     "#{label} #{year}"
   end
 
+  # Chronological sort value for a period_key like "jun-jul-2026", so periods
+  # order by date instead of alphabetically by string.
+  def self.period_sort_key(period_key)
+    parts = period_key.to_s.split("-")
+    year = parts.last.to_i
+    start_month = Date::ABBR_MONTHNAMES.index(parts.first.to_s.capitalize) || 0
+    (year * 100) + start_month
+  end
+
   def self.current_period_key
     period_for(Date.today)
   end
