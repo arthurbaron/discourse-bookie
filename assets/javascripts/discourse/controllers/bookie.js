@@ -254,6 +254,27 @@ function clubSuggestionsFor(clubs, query) {
     .slice(0, 6);
 }
 
+const BOOKIE_SPORTS = [
+  { key: "football", label: "Football", icon: "⚽", hasDraw: true },
+  { key: "boxing", label: "Boxing", icon: "🥊", hasDraw: false },
+  { key: "tennis", label: "Tennis", icon: "🎾", hasDraw: false },
+];
+
+const SPORT_PARTICIPANT_LABELS = {
+  football: ["Home team", "Away team"],
+  boxing: ["Fighter A", "Fighter B"],
+  tennis: ["Player 1", "Player 2"],
+};
+
+function sportHasDraw(key) {
+  const sport = BOOKIE_SPORTS.find((s) => s.key === key);
+  return sport ? sport.hasDraw : true;
+}
+
+function participantLabels(key) {
+  return SPORT_PARTICIPANT_LABELS[key] || SPORT_PARTICIPANT_LABELS.football;
+}
+
 function decorateAccumulator(acc) {
   const statusLabels = {
     pending: "Pending",
@@ -305,6 +326,7 @@ export default class BookieController extends Controller {
   @tracked accaError = null;
   @tracked accaPlacing = false;
   @tracked accumulators = [];
+  @tracked sportFilter = "all";
   // Standings state
   @tracked standingsTab = "league-table";
   @tracked leagueTable = [];
@@ -325,6 +347,7 @@ export default class BookieController extends Controller {
   @tracked closablePeriodLabel = null;
   @tracked closablePeriodClosed = false;
   @tracked periodClosing = false;
+  @tracked nmSport = "football";
   @tracked nmHomeTeam = "";
   @tracked nmAwayTeam = "";
   @tracked nmTitle = "";
@@ -336,6 +359,7 @@ export default class BookieController extends Controller {
   @tracked grantAllReason = "";
   @tracked grantAllLoading = false;
   @tracked editingMatchId = null;
+  @tracked emSport = "football";
   @tracked emHomeTeam = "";
   @tracked emAwayTeam = "";
   @tracked emTitle = "";
@@ -522,18 +546,30 @@ export default class BookieController extends Controller {
   }
 
   get newHomeClubSuggestions() {
+    if (this.nmSport !== "football") {
+      return [];
+    }
     return clubSuggestionsFor(this.adminClubs, this.nmHomeTeam);
   }
 
   get newAwayClubSuggestions() {
+    if (this.nmSport !== "football") {
+      return [];
+    }
     return clubSuggestionsFor(this.adminClubs, this.nmAwayTeam);
   }
 
   get editHomeClubSuggestions() {
+    if (this.emSport !== "football") {
+      return [];
+    }
     return clubSuggestionsFor(this.adminClubs, this.emHomeTeam);
   }
 
   get editAwayClubSuggestions() {
+    if (this.emSport !== "football") {
+      return [];
+    }
     return clubSuggestionsFor(this.adminClubs, this.emAwayTeam);
   }
 
@@ -548,6 +584,7 @@ export default class BookieController extends Controller {
     this.currency = currency;
     this.resultsSubTab = "my-results";
     this.betMode = "single";
+    this.sportFilter = "all";
     this.accaStake = "";
     this.accaError = null;
     this.accaPlacing = false;
@@ -633,6 +670,51 @@ export default class BookieController extends Controller {
       stake < 10 ||
       stake > this.balance
     );
+  }
+
+  // ── Sports / event filter ───────────────────────────
+  get bookieSports() {
+    return BOOKIE_SPORTS;
+  }
+
+  get availableSports() {
+    const present = new Set(this.matches.map((m) => m.sport));
+    return BOOKIE_SPORTS.filter((s) => present.has(s.key));
+  }
+
+  get showSportFilter() {
+    return this.availableSports.length > 1;
+  }
+
+  get filteredMatches() {
+    if (this.sportFilter === "all") {
+      return this.matches;
+    }
+    return this.matches.filter((m) => m.sport === this.sportFilter);
+  }
+
+  get nmHasDraw() {
+    return sportHasDraw(this.nmSport);
+  }
+
+  get emHasDraw() {
+    return sportHasDraw(this.emSport);
+  }
+
+  get nmHomeLabel() {
+    return participantLabels(this.nmSport)[0];
+  }
+
+  get nmAwayLabel() {
+    return participantLabels(this.nmSport)[1];
+  }
+
+  get emHomeLabel() {
+    return participantLabels(this.emSport)[0];
+  }
+
+  get emAwayLabel() {
+    return participantLabels(this.emSport)[1];
   }
 
   // ── Tab navigation ──────────────────────────────────
@@ -797,6 +879,11 @@ export default class BookieController extends Controller {
   }
 
   @action
+  setSportFilter(sport) {
+    this.sportFilter = sport;
+  }
+
+  @action
   toggleAccaSelection(match, choice) {
     if (!match.canBet) {
       return;
@@ -916,6 +1003,11 @@ export default class BookieController extends Controller {
   }
 
   @action
+  updateFieldValue(field, value) {
+    this[field] = value;
+  }
+
+  @action
   async createMatch() {
     if (!this.nmHomeTeam || !this.nmAwayTeam || !this.nmDeadline) {
       this.adminError = "Home team, away team and deadline are required.";
@@ -937,10 +1029,11 @@ export default class BookieController extends Controller {
         data: {
           match: {
             title,
+            sport: this.nmSport,
             home_team: this.nmHomeTeam,
             away_team: this.nmAwayTeam,
             odds_home: this.nmOddsHome,
-            odds_draw: this.nmOddsDraw,
+            odds_draw: this.nmHasDraw ? this.nmOddsDraw : null,
             odds_away: this.nmOddsAway,
             deadline,
           },
@@ -959,6 +1052,7 @@ export default class BookieController extends Controller {
       await this.loadAdminMatches();
 
       // Reset form
+      this.nmSport = "football";
       this.nmHomeTeam = "";
       this.nmAwayTeam = "";
       this.nmTitle = "";
@@ -1031,6 +1125,7 @@ export default class BookieController extends Controller {
   @action
   startEditingMatch(match) {
     this.editingMatchId = match.id;
+    this.emSport = match.sport || "football";
     this.emHomeTeam = match.home_team || "";
     this.emAwayTeam = match.away_team || "";
     this.emTitle = match.title || "";
@@ -1074,10 +1169,11 @@ export default class BookieController extends Controller {
         data: {
           match: {
             title,
+            sport: this.emSport,
             home_team: this.emHomeTeam,
             away_team: this.emAwayTeam,
             odds_home: this.emOddsHome,
-            odds_draw: this.emOddsDraw,
+            odds_draw: this.emHasDraw ? this.emOddsDraw : null,
             odds_away: this.emOddsAway,
             deadline,
           },

@@ -2713,3 +2713,29 @@
     align-items: flex-start;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   Other sports
+   ═══════════════════════════════════════════════════════ */
+
+.bookie-sport-filter {
+  margin-bottom: 1.25rem;
+}
+
+.bookie-match-sport {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: -0.6rem;
+  font-size: 0.72rem;
+  color: var(--primary-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bookie-sport-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}

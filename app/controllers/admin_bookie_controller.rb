@@ -18,11 +18,16 @@ class AdminBookieController < ApplicationController
 
   # POST /admin/plugins/bookie/matches
   def create_match
-    home_result = BookieClubResolver.find_or_create!(params.dig(:match, :home_team))
-    away_result = BookieClubResolver.find_or_create!(params.dig(:match, :away_team))
     attrs = match_params.to_h
-    attrs[:home_team] = home_result.canonical_name if home_result.canonical_name.present?
-    attrs[:away_team] = away_result.canonical_name if away_result.canonical_name.present?
+
+    # Club resolution (aliases / canonical names) is football-specific.
+    if attrs[:sport].blank? || attrs[:sport] == "football"
+      home_result = BookieClubResolver.find_or_create!(attrs[:home_team])
+      away_result = BookieClubResolver.find_or_create!(attrs[:away_team])
+      attrs[:home_team] = home_result.canonical_name if home_result.canonical_name.present?
+      attrs[:away_team] = away_result.canonical_name if away_result.canonical_name.present?
+    end
+
     attrs[:title] = "#{attrs[:home_team]} vs #{attrs[:away_team]}" if attrs[:title].blank?
 
     match = BookieMatch.new(attrs)
@@ -234,7 +239,7 @@ class AdminBookieController < ApplicationController
     params.require(:match).permit(
       :title, :home_team, :away_team,
       :odds_home, :odds_draw, :odds_away,
-      :deadline
+      :deadline, :sport
     )
   end
 
@@ -252,8 +257,12 @@ class AdminBookieController < ApplicationController
       home_club_id: match.home_club_id,
       away_club_id: match.away_club_id,
       odds_home:    match.odds_home.to_f,
-      odds_draw:    match.odds_draw.to_f,
+      odds_draw:    match.odds_draw&.to_f,
       odds_away:    match.odds_away.to_f,
+      sport:        match.sport,
+      sport_label:  match.sport_label,
+      sport_icon:   match.sport_icon,
+      has_draw:     match.has_draw?,
       deadline:     match.deadline.iso8601,
       status:       match.status,
       result:       match.result,
