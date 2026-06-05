@@ -282,17 +282,17 @@
               {{on "click" (fn this.setResultsSubTab "my-results")}}>
         My results
       </button>
-      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'stats') 'active'}}"
-              {{on "click" (fn this.setResultsSubTab "stats")}}>
-        Stats
+      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'accumulators') 'active'}}"
+              {{on "click" (fn this.setResultsSubTab "accumulators")}}>
+        Accas
       </button>
       <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'achievements') 'active'}}"
               {{on "click" (fn this.setResultsSubTab "achievements")}}>
-        Achievements
+        Badges
       </button>
-      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'accumulators') 'active'}}"
-              {{on "click" (fn this.setResultsSubTab "accumulators")}}>
-        Accumulators
+      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'stats') 'active'}}"
+              {{on "click" (fn this.setResultsSubTab "stats")}}>
+        Stats
       </button>
     </div>
 
