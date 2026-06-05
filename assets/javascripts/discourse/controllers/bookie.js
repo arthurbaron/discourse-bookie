@@ -10,6 +10,7 @@ class MatchState {
   @tracked betAmount = "";
   @tracked betError = null;
   @tracked detailsExpanded = false;
+  @tracked accaChoice = null;
   @tracked _userBet = null;
   @tracked _canBet = false;
 
@@ -253,6 +254,37 @@ function clubSuggestionsFor(clubs, query) {
     .slice(0, 6);
 }
 
+function decorateAccumulator(acc) {
+  const statusLabels = {
+    pending: "Pending",
+    won: "Won",
+    lost: "Lost",
+    cancelled: "Cancelled",
+    void: "Void",
+  };
+
+  return {
+    ...acc,
+    createdAtLabel: acc.created_at ? formatDate(acc.created_at) : "",
+    statusClass: `acca-status-${acc.status}`,
+    statusLabel: statusLabels[acc.status] || acc.status,
+    isPending: acc.status === "pending",
+    isWon: acc.status === "won",
+    isLost: acc.status === "lost",
+    legs: (acc.legs || []).map((leg) => ({
+      ...leg,
+      legStatusClass:
+        leg.status === "won"
+          ? "is-correct"
+          : leg.status === "lost"
+            ? "is-wrong"
+            : "",
+      legStatusIcon:
+        leg.status === "won" ? "✓" : leg.status === "lost" ? "✗" : "•",
+    })),
+  };
+}
+
 export default class BookieController extends Controller {
   @service currentUser;
   queryParams = [{ activeTab: "tab" }];
@@ -267,6 +299,12 @@ export default class BookieController extends Controller {
   @tracked walletTransactions = [];
   @tracked walletBalance = 0;
   @tracked notificationsEnabled = true;
+  // Accumulator state
+  @tracked betMode = "single";        // "single" | "accumulator"
+  @tracked accaStake = "";
+  @tracked accaError = null;
+  @tracked accaPlacing = false;
+  @tracked accumulators = [];
   // Standings state
   @tracked standingsTab = "league-table";
   @tracked leagueTable = [];
@@ -509,6 +547,14 @@ export default class BookieController extends Controller {
     this.balance = model.balance || 0;
     this.currency = currency;
     this.resultsSubTab = "my-results";
+    this.betMode = "single";
+    this.accaStake = "";
+    this.accaError = null;
+    this.accaPlacing = false;
+    this.matches.forEach((m) => (m.accaChoice = null));
+    this.accumulators = (model.accumulators || []).map((a) =>
+      decorateAccumulator(a)
+    );
     this.walletBalance = model.wallet?.balance || 0;
     this.notificationsEnabled = model.wallet?.notifications_enabled !== false;
     this.walletTransactions = (model.wallet?.transactions || []).map((tx) => ({
@@ -537,6 +583,58 @@ export default class BookieController extends Controller {
     return this.selectedPeriod?.period_key ?? null;
   }
 
+  // ── Accumulator (bet slip) ──────────────────────────
+  // Derived from each match's accaChoice so there is a single source of truth.
+  get accaSlip() {
+    return this.matches
+      .filter((m) => m.accaChoice)
+      .map((m) => ({
+        matchId: m.id,
+        choice: m.accaChoice,
+        odds: parseFloat(m[`odds_${m.accaChoice}`]) || 0,
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        choiceLabel:
+          m.accaChoice === "home"
+            ? m.home_team
+            : m.accaChoice === "away"
+              ? m.away_team
+              : "Draw",
+        match: m,
+      }));
+  }
+
+  get accaCombinedOdds() {
+    if (!this.accaSlip.length) {
+      return 0;
+    }
+    const product = this.accaSlip.reduce((total, leg) => total * leg.odds, 1);
+    return Math.round(product * 100) / 100;
+  }
+
+  get accaPotentialPayout() {
+    const stake = parseInt(this.accaStake, 10);
+    if (!stake || this.accaSlip.length < 2) {
+      return 0;
+    }
+    return Math.round(stake * this.accaCombinedOdds);
+  }
+
+  get accaNeedsMore() {
+    return this.accaSlip.length < 2;
+  }
+
+  get accaPlaceDisabled() {
+    const stake = parseInt(this.accaStake, 10);
+    return (
+      this.accaPlacing ||
+      this.accaSlip.length < 2 ||
+      isNaN(stake) ||
+      stake < 10 ||
+      stake > this.balance
+    );
+  }
+
   // ── Tab navigation ──────────────────────────────────
 
   @action
@@ -562,6 +660,8 @@ export default class BookieController extends Controller {
       this.loadSeasonStatus();
     } else if (tab === "wallet") {
       this.refreshWallet();
+    } else if (tab === "results") {
+      this.refreshAccumulators();
     }
   }
 
@@ -685,6 +785,106 @@ export default class BookieController extends Controller {
       this.selectedPeriodKey = null;
     } catch (_e) {
       // silently fail
+    }
+  }
+
+  // ── Accumulators ─────────────────────────────────────
+
+  @action
+  setBetMode(mode) {
+    this.betMode = mode;
+    this.accaError = null;
+  }
+
+  @action
+  toggleAccaSelection(match, choice) {
+    if (!match.canBet) {
+      return;
+    }
+    match.accaChoice = match.accaChoice === choice ? null : choice;
+    this.accaError = null;
+  }
+
+  @action
+  removeAccaLeg(leg) {
+    if (leg.match) {
+      leg.match.accaChoice = null;
+    }
+  }
+
+  @action
+  setAccaStake(event) {
+    this.accaStake = event.target.value;
+  }
+
+  @action
+  clearAccaSlip() {
+    this.matches.forEach((m) => (m.accaChoice = null));
+    this.accaStake = "";
+    this.accaError = null;
+  }
+
+  @action
+  async placeAccumulator() {
+    const stake = parseInt(this.accaStake, 10);
+    const legs = this.accaSlip;
+
+    if (legs.length < 2) {
+      this.accaError = "Add at least 2 selections.";
+      return;
+    }
+    if (isNaN(stake) || stake < 10) {
+      this.accaError = "Minimum stake is 10 coins.";
+      return;
+    }
+    if (stake > this.balance) {
+      this.accaError = "Insufficient balance.";
+      return;
+    }
+
+    this.accaPlacing = true;
+    this.accaError = null;
+    try {
+      const result = await ajax("/bookie/accumulators.json", {
+        type: "POST",
+        data: {
+          amount: stake,
+          legs: legs.map((leg) => ({ match_id: leg.matchId, choice: leg.choice })),
+        },
+      });
+      this.balance = result.new_balance;
+      this.clearAccaSlip();
+      await this.refreshAccumulators();
+    } catch (e) {
+      this.accaError =
+        e.jqXHR?.responseJSON?.error || "Could not place your accumulator.";
+    } finally {
+      this.accaPlacing = false;
+    }
+  }
+
+  async refreshAccumulators() {
+    try {
+      const data = await ajax("/bookie/accumulators.json");
+      this.accumulators = (data.accumulators || []).map((a) =>
+        decorateAccumulator(a)
+      );
+    } catch (_e) {
+      // silently fail
+    }
+  }
+
+  @action
+  async cancelAccumulator(acc) {
+    if (!confirm("Cancel this accumulator? Your stake will be refunded.")) {
+      return;
+    }
+    try {
+      await ajax(`/bookie/accumulators/${acc.id}.json`, { type: "DELETE" });
+      this.balance += acc.amount;
+      await this.refreshAccumulators();
+    } catch (e) {
+      alert(e.jqXHR?.responseJSON?.error || "Could not cancel the accumulator.");
     }
   }
 

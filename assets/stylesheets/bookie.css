@@ -2399,3 +2399,311 @@
 .bookie-end-season-btn {
   align-self: flex-start;
 }
+
+/* ═══════════════════════════════════════════════════════
+   Accumulators
+   ═══════════════════════════════════════════════════════ */
+
+.bookie-betmode-tabs {
+  margin-bottom: 1rem;
+}
+
+/* Odds button when added to the accumulator slip */
+.bookie-odds-btn.in-slip {
+  position: relative;
+  border-color: var(--tertiary);
+  background: var(--tertiary-low);
+}
+
+.bookie-odds-btn.in-slip::after {
+  content: "✓";
+  position: absolute;
+  top: 0.25rem;
+  right: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--tertiary);
+}
+
+.bookie-acca-note {
+  font-size: 0.78rem;
+  color: var(--primary-medium);
+  text-align: center;
+}
+
+.bookie-acca-note--added {
+  color: var(--tertiary);
+  font-weight: 600;
+}
+
+/* ── Bet slip ──────────────────────────────────────────── */
+
+.bookie-acca-slip {
+  position: sticky;
+  bottom: 0;
+  margin-top: 1.25rem;
+  background: var(--secondary);
+  border: 1px solid var(--primary-low);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.14);
+  z-index: 5;
+}
+
+.bookie-acca-slip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.bookie-acca-slip-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.bookie-acca-slip-count {
+  font-size: 0.8rem;
+  color: var(--primary-medium);
+}
+
+.bookie-acca-slip-clear {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: auto;
+  color: var(--tertiary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.bookie-acca-slip-legs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.bookie-acca-slip-leg {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--primary-very-low, var(--primary-low));
+  border-radius: 8px;
+}
+
+.bookie-acca-slip-leg-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.bookie-acca-slip-leg-pick {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.bookie-acca-slip-leg-match {
+  font-size: 0.78rem;
+  color: var(--primary-medium);
+}
+
+.bookie-acca-slip-leg-odds {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.bookie-acca-slip-leg-remove {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  padding: 0 0.15rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--primary-medium);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.bookie-acca-slip-leg-remove:hover {
+  color: var(--danger);
+}
+
+.bookie-acca-slip-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--primary-low);
+  font-size: 0.9rem;
+  color: var(--primary-medium);
+}
+
+.bookie-acca-slip-summary strong {
+  font-size: 1.05rem;
+  color: var(--primary);
+}
+
+.bookie-acca-slip-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.bookie-acca-stake-input {
+  width: 120px;
+}
+
+.bookie-acca-slip-controls .bookie-place-bet {
+  margin-left: auto;
+}
+
+.bookie-acca-slip-hint {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--primary-medium);
+}
+
+/* ── My accumulators (Results tab) ─────────────────────── */
+
+.bookie-acca-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bookie-acca-card {
+  background: var(--secondary);
+  border: 1px solid var(--primary-low);
+  border-left: 3px solid var(--primary-low);
+  border-radius: 12px;
+  padding: 0.9rem 1.25rem;
+}
+
+.bookie-acca-card.acca-status-won    { border-left-color: var(--success); }
+.bookie-acca-card.acca-status-lost   { border-left-color: var(--danger); }
+.bookie-acca-card.acca-status-pending { border-left-color: var(--tertiary); }
+.bookie-acca-card.acca-status-cancelled,
+.bookie-acca-card.acca-status-void {
+  border-left-color: var(--primary-medium);
+  opacity: 0.85;
+}
+
+.bookie-acca-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.bookie-acca-card-status {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.acca-status-won    .bookie-acca-card-status { color: var(--success); }
+.acca-status-lost   .bookie-acca-card-status { color: var(--danger); }
+.acca-status-pending .bookie-acca-card-status { color: var(--tertiary); }
+
+.bookie-acca-card-meta {
+  font-size: 0.8rem;
+  color: var(--primary-medium);
+}
+
+.bookie-acca-card-legs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.bookie-acca-card-leg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.15rem 0;
+}
+
+.bookie-acca-leg-icon {
+  width: 1rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--primary-medium);
+  flex-shrink: 0;
+}
+
+.bookie-acca-leg-icon.is-correct { color: var(--success); }
+.bookie-acca-leg-icon.is-wrong   { color: var(--danger); }
+
+.bookie-acca-leg-pick {
+  font-weight: 600;
+}
+
+.bookie-acca-leg-match {
+  color: var(--primary-medium);
+  margin-right: auto;
+  min-width: 0;
+}
+
+.bookie-acca-leg-odds {
+  color: var(--primary-medium);
+  white-space: nowrap;
+}
+
+.bookie-acca-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--primary-low);
+}
+
+.bookie-acca-card-figures {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.bookie-acca-card-stake {
+  font-size: 0.85rem;
+  color: var(--primary-medium);
+}
+
+.bookie-acca-card-payout {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .bookie-acca-slip-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bookie-acca-stake-input {
+    width: 100%;
+  }
+
+  .bookie-acca-slip-controls .bookie-place-bet {
+    margin-left: 0;
+  }
+
+  .bookie-acca-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
