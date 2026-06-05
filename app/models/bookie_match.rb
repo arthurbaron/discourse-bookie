@@ -50,9 +50,13 @@ class BookieMatch < ActiveRecord::Base
   # Pays out winning bets and updates all bet statuses.
   def settle!(result_choice)
     return false unless %w[home draw away].include?(result_choice)
-    return false if status == "settled"
+
+    did_settle = false
 
     ActiveRecord::Base.transaction do
+      lock!                          # row lock — serialises concurrent / double settles
+      next if status == "settled"    # re-check under the lock (idempotent, no double payout)
+
       update!(result: result_choice, status: "settled")
       currency_name = SiteSetting.bookie_currency_name rescue "coins"
       currency_name = "coins" if currency_name == "Coins"
@@ -90,9 +94,20 @@ class BookieMatch < ActiveRecord::Base
           currency_name: currency_name
         )
       end
+
+      # ── Settle accumulator legs on this match, then re-evaluate their accas ──
+      legs = BookieAccumulatorLeg.where(match_id: id, status: "pending").to_a
+      legs.each do |leg|
+        leg.update!(status: leg.choice == result_choice ? "won" : "lost")
+      end
+      legs.map(&:accumulator_id).uniq.each do |acc_id|
+        BookieAccumulator.find(acc_id).recalculate_and_settle!
+      end
+
+      did_settle = true
     end
 
-    true
+    did_settle
   end
 
   private

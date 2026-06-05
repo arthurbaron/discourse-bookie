@@ -211,6 +211,128 @@ class BookieController < ApplicationController
     render_error("Could not cancel your bet right now.", 500)
   end
 
+  # GET /bookie/accumulators
+  def accumulators
+    accas = BookieAccumulator
+      .where(user_id: current_user.id)
+      .includes(bookie_accumulator_legs: :bookie_match)
+      .order(created_at: :desc)
+      .limit(50)
+
+    render json: {
+      accumulators: accas.map { |a| serialize_accumulator(a) },
+      currency:     bookie_currency
+    }
+  end
+
+  # POST /bookie/accumulators
+  def place_accumulator
+    amount   = params[:amount].to_i
+    raw_legs = params[:legs]
+    raw_legs = raw_legs.values if raw_legs.respond_to?(:values) && !raw_legs.is_a?(Array)
+    legs_input = Array(raw_legs)
+
+    min_legs = BookieAccumulator::MIN_LEGS
+    max_legs = BookieAccumulator.max_legs
+
+    return render_error("Minimum stake is #{bookie_min_bet} coins.") if amount < bookie_min_bet
+    return render_error("An accumulator needs at least #{min_legs} selections.") if legs_input.length < min_legs
+    return render_error("An accumulator can have at most #{max_legs} selections.") if legs_input.length > max_legs
+
+    seen = {}
+    resolved = []
+    legs_input.each do |leg|
+      match_id = leg[:match_id].to_i
+      choice   = leg[:choice].to_s
+
+      return render_error("Invalid selection.") unless %w[home draw away].include?(choice)
+      return render_error("The same event can't appear twice in one accumulator.") if seen[match_id]
+      seen[match_id] = true
+
+      match = BookieMatch.find_by(id: match_id)
+      return render_error("One of the selected events no longer exists.") unless match
+      return render_error("Betting is closed for #{match.title}.") unless match.can_bet?
+
+      odds = match.odds_for(choice)
+      return render_error("Invalid selection.") unless odds
+
+      resolved << { match: match, choice: choice, odds: odds }
+    end
+
+    combined_odds    = resolved.reduce(1.0) { |product, leg| product * leg[:odds] }
+    potential_payout = (amount * combined_odds).round
+
+    wallet = BookieWallet.find_or_create_for_user(current_user.id)
+    return render_error("Insufficient balance.") if wallet.balance < amount
+
+    acc = nil
+    ActiveRecord::Base.transaction do
+      acc = BookieAccumulator.create!(
+        user_id:          current_user.id,
+        amount:           amount,
+        combined_odds:    combined_odds,
+        potential_payout: potential_payout,
+        status:           "pending"
+      )
+      resolved.each do |leg|
+        acc.bookie_accumulator_legs.create!(
+          match_id: leg[:match].id,
+          choice:   leg[:choice],
+          odds:     leg[:odds]
+        )
+      end
+      wallet.debit!(amount, "Accumulator (#{resolved.length} legs)", type: "acca_placed")
+    end
+
+    render json: {
+      accumulator: serialize_accumulator(acc.reload),
+      new_balance: wallet.reload.balance
+    }
+  rescue ActiveRecord::RecordInvalid => e
+    render_error(e.record.errors.full_messages.to_sentence)
+  rescue => e
+    log_internal_error("place_accumulator", e)
+    render_error("Could not place your accumulator right now.", 500)
+  end
+
+  # DELETE /bookie/accumulators/:id
+  def cancel_accumulator
+    acc = BookieAccumulator.find(params[:id])
+
+    return render_error("Not authorized.", 403) unless acc.user_id == current_user.id
+    return render_error("This accumulator can no longer be cancelled.") unless acc.status == "pending"
+
+    legs = acc.bookie_accumulator_legs.includes(:bookie_match).to_a
+    not_cancellable = legs.any? do |leg|
+      leg.status != "pending" || leg.bookie_match.nil? || leg.bookie_match.deadline_passed?
+    end
+    return render_error("Cancellation has closed — one or more events have started.") if not_cancellable
+
+    refunded = false
+    ActiveRecord::Base.transaction do
+      claimed = BookieAccumulator
+        .where(id: acc.id, user_id: current_user.id, status: "pending")
+        .update_all(status: "cancelled")
+
+      if claimed.positive?
+        acc.bookie_accumulator_legs.update_all(status: "void")
+        BookieWallet
+          .find_or_create_for_user(current_user.id)
+          .credit!(acc.amount, "Accumulator cancelled", type: "acca_cancelled")
+        refunded = true
+      end
+    end
+
+    if refunded
+      render json: { success: true }
+    else
+      render_error("This accumulator was already cancelled or settled.")
+    end
+  rescue => e
+    log_internal_error("cancel_accumulator", e)
+    render_error("Could not cancel your accumulator right now.", 500)
+  end
+
   private
 
   BOOKIE_CURRENCY_DEFAULT  = "coins"
@@ -242,6 +364,43 @@ class BookieController < ApplicationController
     Rails.logger.error(
       "[discourse-bookie] #{action} failed for user #{current_user&.id}: #{error.class}: #{error.message}"
     )
+  end
+
+  def serialize_accumulator(acc)
+    {
+      id:               acc.id,
+      amount:           acc.amount,
+      combined_odds:    acc.combined_odds.to_f,
+      potential_payout: acc.potential_payout,
+      payout:           acc.payout,
+      status:           acc.status,
+      created_at:       acc.created_at.iso8601,
+      settled_at:       acc.settled_at&.iso8601,
+      legs:             acc.bookie_accumulator_legs.map { |leg| serialize_accumulator_leg(leg) }
+    }
+  end
+
+  def serialize_accumulator_leg(leg)
+    match = leg.bookie_match
+    {
+      match_id:     leg.match_id,
+      choice:       leg.choice,
+      odds:         leg.odds.to_f,
+      status:       leg.status,
+      home_team:    match&.home_team,
+      away_team:    match&.away_team,
+      title:        match&.title,
+      result:       match&.result,
+      choice_label: accumulator_choice_label(leg.choice, match)
+    }
+  end
+
+  def accumulator_choice_label(choice, match)
+    case choice
+    when "home" then match&.home_team || "Home"
+    when "away" then match&.away_team || "Away"
+    else "Draw"
+    end
   end
 
   def settled_match_scores_for(user_id, target_match_ids)
