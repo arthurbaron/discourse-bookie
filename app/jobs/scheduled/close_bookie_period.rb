@@ -14,7 +14,8 @@ module Jobs
       #   Feb 1  → closes Dec-Jan
       #   Apr 1  → closes Feb-Mar
       #   Jun 1  → closes Apr-May
-      return unless today.day == 1 && [2, 4, 6, 10, 12].include?(today.month)
+      #   Aug 1  → closes Jun-Jul
+      return unless today.day == 1 && [2, 4, 6, 8, 10, 12].include?(today.month)
 
       # The period that just ended = yesterday's period
       closing_key = BookieLeagueEntry.period_for(today - 1)
