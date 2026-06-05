@@ -9,6 +9,7 @@ class BookieLeagueEntry < ActiveRecord::Base
     { months: [12, 1],  label: "Dec-Jan" },
     { months: [2, 3],   label: "Feb-Mar" },
     { months: [4, 5],   label: "Apr-May" },
+    { months: [6, 7],   label: "Jun-Jul" },
   ].freeze
 
   def self.period_for(date = Date.today)
