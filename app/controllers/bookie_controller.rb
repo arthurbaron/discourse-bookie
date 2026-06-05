@@ -97,7 +97,7 @@ class BookieController < ApplicationController
           end
         }
       end
-      .sort_by { |p| p[:period_key] }
+      .sort_by { |p| BookieLeagueEntry.period_sort_key(p[:period_key]) }
       .reverse
 
     render json: {
