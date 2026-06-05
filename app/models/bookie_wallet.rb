@@ -17,7 +17,7 @@ class BookieWallet < ActiveRecord::Base
   end
 
   # Remove coins (e.g. placing a bet)
-  def debit!(amount, description, match_id: nil)
+  def debit!(amount, description, match_id: nil, type: "bet_placed")
     raise ArgumentError, "Amount must be positive" if amount.to_i <= 0
 
     with_lock do
@@ -27,7 +27,7 @@ class BookieWallet < ActiveRecord::Base
       update!(balance: balance - amount)
       BookieTransaction.create!(
         user_id:          user_id,
-        transaction_type: "bet_placed",
+        transaction_type: type,
         amount:           -amount,
         description:      description,
         match_id:         match_id

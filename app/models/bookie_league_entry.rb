@@ -99,6 +99,34 @@ class BookieLeagueEntry < ActiveRecord::Base
     end
   end
 
+  # Minimal League Table reward for landing a full accumulator.
+  # Awarded only on a win (the caller guarantees this) and bumps points only —
+  # it deliberately does NOT touch bets_placed / correct_picks / streak, so the
+  # accuracy and streak stats stay single-bet based. Not farmable: it requires
+  # winning every leg. Tunable via the bookie_acca_league_points site setting
+  # (set to 0 to disable).
+  def self.record_won_accumulator!(user_id:, points: nil)
+    points ||= (SiteSetting.bookie_acca_league_points rescue 5).to_i
+    return if points <= 0
+
+    period_key = current_period_key
+    return unless period_key  # outside season (e.g. June/July)
+
+    entry = for_user(user_id, period_key)
+    entry.with_lock do
+      entry.points += points
+      entry.save!
+
+      BookieTransaction.create!(
+        user_id:          user_id,
+        transaction_type: "league_points",
+        amount:           points,
+        description:      "League pts: won accumulator (#{points} pts)",
+        match_id:         nil
+      )
+    end
+  end
+
   # ── Period close ──────────────────────────────────────────────────────────
 
   def self.close_period!(period_key)
