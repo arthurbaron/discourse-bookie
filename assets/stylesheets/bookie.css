@@ -2689,6 +2689,12 @@
 }
 
 @media (max-width: 600px) {
+  /* Lift the sticky slip clear of the fixed mobile tab bar so the
+     "Place accumulator" button isn't hidden behind it. */
+  .bookie-acca-slip {
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
   .bookie-acca-slip-controls {
     flex-direction: column;
     align-items: stretch;
