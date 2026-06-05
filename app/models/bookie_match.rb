@@ -7,13 +7,26 @@ class BookieMatch < ActiveRecord::Base
   # cascade only removes already-refunded bets.
   has_many :bookie_bets, foreign_key: :match_id, dependent: :destroy
 
+  SPORTS = {
+    "football" => { label: "Football", icon: "⚽", draw: true },
+    "boxing"   => { label: "Boxing",   icon: "🥊", draw: false },
+    "tennis"   => { label: "Tennis",   icon: "🎾", draw: false },
+  }.freeze
+
+  attribute :sport, :string, default: "football"
+
   before_validation :assign_canonical_clubs
+  before_validation :clear_draw_odds_for_two_outcome_sports
 
   validates :title, :home_team, :away_team, :deadline, presence: true
-  validates :odds_home, :odds_draw, :odds_away,
+  validates :odds_home, :odds_away,
             numericality: { greater_than: 1.0, less_than: 100.0 }
+  validates :odds_draw,
+            numericality: { greater_than: 1.0, less_than: 100.0 }, allow_nil: true
   validates :status, inclusion: { in: %w[open settled] }
   validates :result, inclusion: { in: %w[home draw away] }, allow_nil: true
+  validates :sport, inclusion: { in: SPORTS.keys }
+  validate :draw_odds_present_when_sport_has_draw
 
   # Betting still open (deadline not yet passed)
   scope :bettable,     -> { where(status: "open").where("deadline > ?", Time.now) }
@@ -33,7 +46,7 @@ class BookieMatch < ActiveRecord::Base
   def odds_for(choice)
     case choice
     when "home" then odds_home.to_f
-    when "draw" then odds_draw.to_f
+    when "draw" then odds_draw&.to_f
     when "away" then odds_away.to_f
     end
   end
@@ -46,10 +59,27 @@ class BookieMatch < ActiveRecord::Base
     away_club&.name || away_team
   end
 
+  def sport_config
+    SPORTS.fetch(sport, SPORTS["football"])
+  end
+
+  def has_draw?
+    sport_config[:draw]
+  end
+
+  def sport_label
+    sport_config[:label]
+  end
+
+  def sport_icon
+    sport_config[:icon]
+  end
+
   # Called by admin when entering the match result.
   # Pays out winning bets and updates all bet statuses.
   def settle!(result_choice)
-    return false unless %w[home draw away].include?(result_choice)
+    valid_results = has_draw? ? %w[home draw away] : %w[home away]
+    return false unless valid_results.include?(result_choice)
 
     did_settle = false
 
@@ -111,7 +141,20 @@ class BookieMatch < ActiveRecord::Base
 
   private
 
+  def draw_odds_present_when_sport_has_draw
+    return unless has_draw?
+
+    errors.add(:odds_draw, "is required for this sport") if odds_draw.blank?
+  end
+
+  # 2-outcome sports (boxing/tennis) never have a draw, so blank out any draw
+  # odds (e.g. the column default) before saving — regardless of schema.
+  def clear_draw_odds_for_two_outcome_sports
+    self.odds_draw = nil unless has_draw?
+  end
+
   def assign_canonical_clubs
+    return unless sport == "football"  # club aliases are football-specific
     return if home_team.blank? || away_team.blank?
 
     home_result = BookieClubResolver.find_or_create!(home_team)

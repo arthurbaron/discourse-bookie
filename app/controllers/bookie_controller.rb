@@ -133,7 +133,8 @@ class BookieController < ApplicationController
     amount = params[:amount].to_i
 
     return render_error("Betting is closed for this match.") unless match.can_bet?
-    return render_error("Invalid choice.") unless %w[home draw away].include?(choice)
+    valid_choices = match.has_draw? ? %w[home draw away] : %w[home away]
+    return render_error("Invalid choice.") unless valid_choices.include?(choice)
     return render_error("Minimum bet is #{bookie_min_bet} coins.") if amount < bookie_min_bet
 
     wallet = BookieWallet.find_or_create_for_user(current_user.id)
@@ -252,6 +253,7 @@ class BookieController < ApplicationController
       match = BookieMatch.find_by(id: match_id)
       return render_error("One of the selected events no longer exists.") unless match
       return render_error("Betting is closed for #{match.title}.") unless match.can_bet?
+      return render_error("Invalid selection.") if choice == "draw" && !match.has_draw?
 
       odds = match.odds_for(choice)
       return render_error("Invalid selection.") unless odds
@@ -634,8 +636,12 @@ class BookieController < ApplicationController
       home_team:  match.home_team,
       away_team:  match.away_team,
       odds_home:  match.odds_home.to_f,
-      odds_draw:  match.odds_draw.to_f,
+      odds_draw:  match.odds_draw&.to_f,
       odds_away:  match.odds_away.to_f,
+      sport:      match.sport,
+      sport_label: match.sport_label,
+      sport_icon:  match.sport_icon,
+      has_draw:   match.has_draw?,
       deadline:   match.deadline.iso8601,
       status:     match.status,
       result:     match.result,
