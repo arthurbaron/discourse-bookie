@@ -14,6 +14,12 @@ class BookieAccumulator < ActiveRecord::Base
     SiteSetting.bookie_acca_max_legs rescue 8
   end
 
+  # Minimum combined odds for a won accumulator to earn League Table points,
+  # so trivial favourite-doubles don't hand out free points.
+  def self.league_min_odds
+    (SiteSetting.bookie_acca_league_min_odds rescue 4.0).to_f
+  end
+
   def leg_count
     bookie_accumulator_legs.size
   end
@@ -38,7 +44,11 @@ class BookieAccumulator < ActiveRecord::Base
         BookieWallet
           .find_or_create_for_user(user_id)
           .credit!(pay, "Accumulator won (#{leg_count} legs)", type: "acca_won")
-        BookieLeagueEntry.record_won_accumulator!(user_id: user_id)
+
+        # League Table bonus only for higher-odds accas (not easy favourites).
+        if combined_odds.to_f >= self.class.league_min_odds
+          BookieLeagueEntry.record_won_accumulator!(user_id: user_id)
+        end
       end
       # else: some legs still pending and none lost → leave pending (no-op)
     end
