@@ -1,7 +1,11 @@
 class BookieMatch < ActiveRecord::Base
   belongs_to :home_club, class_name: "BookieClub", optional: true
   belongs_to :away_club, class_name: "BookieClub", optional: true
-  has_many :bookie_bets, foreign_key: :match_id, dependent: :nullify
+  # :destroy (not :nullify) because bookie_bets.match_id is NOT NULL — nullify
+  # would raise a constraint violation. destroy_match only deletes open matches
+  # (settled ones are blocked) and refunds their pending bets first, so the
+  # cascade only removes already-refunded bets.
+  has_many :bookie_bets, foreign_key: :match_id, dependent: :destroy
 
   before_validation :assign_canonical_clubs
 
