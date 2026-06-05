@@ -108,13 +108,15 @@ class BookieMatch < ActiveRecord::Base
           )
         end
 
-        # Award League Table points
-        BookieLeagueEntry.record_settled_bet!(
-          user_id: bet.user_id,
-          won:     won,
-          odds:    bet.odds,
-          match_id: id
-        )
+        # League Table points are football-only (it's the football ladder).
+        if sport == "football"
+          BookieLeagueEntry.record_settled_bet!(
+            user_id: bet.user_id,
+            won:     won,
+            odds:    bet.odds,
+            match_id: id
+          )
+        end
 
         settled_user_ids << bet.user_id
       end

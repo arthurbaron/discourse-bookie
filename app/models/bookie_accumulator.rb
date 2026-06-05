@@ -24,6 +24,12 @@ class BookieAccumulator < ActiveRecord::Base
     bookie_accumulator_legs.size
   end
 
+  def all_football?
+    bookie_accumulator_legs.includes(:bookie_match).all? do |leg|
+      leg.bookie_match&.sport == "football"
+    end
+  end
+
   # Re-evaluate this accumulator after one of its legs' matches has settled.
   # Race-safe + idempotent: a row lock + the pending re-check guarantee a
   # single payout even if settlement runs concurrently or a match is settled
@@ -45,8 +51,9 @@ class BookieAccumulator < ActiveRecord::Base
           .find_or_create_for_user(user_id)
           .credit!(pay, "Accumulator won (#{leg_count} legs)", type: "acca_won")
 
-        # League Table bonus only for higher-odds accas (not easy favourites).
-        if combined_odds.to_f >= self.class.league_min_odds
+        # League bonus only for higher-odds, all-football accas — the League
+        # Table is football-only. Mixed-sport accas pay out in coins only.
+        if all_football? && combined_odds.to_f >= self.class.league_min_odds
           BookieLeagueEntry.record_won_accumulator!(user_id: user_id)
         end
       end
