@@ -179,18 +179,33 @@ class BookieController < ApplicationController
     return render_error("Can only cancel pending bets.") unless bet.status == "pending"
     return render_error("Betting has closed — cannot cancel.") if bet.bookie_match.deadline_passed?
 
+    refunded = false
+
     ActiveRecord::Base.transaction do
-      wallet = BookieWallet.find_or_create_for_user(current_user.id)
-      wallet.credit!(
-        bet.amount,
-        "Cancelled bet on: #{bet.bookie_match.title}",
-        match_id: bet.match_id,
-        type:     "bet_cancelled"
-      )
-      bet.destroy!
+      # Atomically claim the bet: only the request that actually deletes the
+      # row (1 row affected) is allowed to refund. Concurrent duplicate
+      # cancels delete 0 rows and bail out, which prevents a double refund.
+      deleted = BookieBet
+        .where(id: bet.id, user_id: current_user.id, status: "pending")
+        .delete_all
+
+      if deleted.positive?
+        wallet = BookieWallet.find_or_create_for_user(current_user.id)
+        wallet.credit!(
+          bet.amount,
+          "Cancelled bet on: #{bet.bookie_match.title}",
+          match_id: bet.match_id,
+          type:     "bet_cancelled"
+        )
+        refunded = true
+      end
     end
 
-    render json: { success: true }
+    if refunded
+      render json: { success: true }
+    else
+      render_error("This bet was already cancelled or settled.")
+    end
   rescue => e
     log_internal_error("cancel_bet", e)
     render_error("Could not cancel your bet right now.", 500)
