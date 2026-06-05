@@ -58,8 +58,7 @@ class BookieMatch < ActiveRecord::Base
       next if status == "settled"    # re-check under the lock (idempotent, no double payout)
 
       update!(result: result_choice, status: "settled")
-      currency_name = SiteSetting.bookie_currency_name rescue "coins"
-      currency_name = "coins" if currency_name == "Coins"
+      settled_user_ids = []
 
       bookie_bets.where(status: "pending").each do |bet|
         won = bet.choice == result_choice
@@ -87,12 +86,7 @@ class BookieMatch < ActiveRecord::Base
           match_id: id
         )
 
-        BookieNotifier.notify_match_settled!(
-          match: self,
-          bet: bet,
-          won: won,
-          currency_name: currency_name
-        )
+        settled_user_ids << bet.user_id
       end
 
       # ── Settle accumulator legs on this match, then re-evaluate their accas ──
@@ -101,8 +95,13 @@ class BookieMatch < ActiveRecord::Base
         leg.update!(status: leg.choice == result_choice ? "won" : "lost")
       end
       legs.map(&:accumulator_id).uniq.each do |acc_id|
-        BookieAccumulator.find(acc_id).recalculate_and_settle!
+        acc = BookieAccumulator.find(acc_id)
+        acc.recalculate_and_settle!
+        settled_user_ids << acc.user_id
       end
+
+      # One consolidated "Bets settled" notification per affected user
+      BookieNotifier.notify_bets_settled!(user_ids: settled_user_ids)
 
       did_settle = true
     end

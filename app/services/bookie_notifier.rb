@@ -3,7 +3,9 @@ class BookieNotifier
   RESULTS_LINK = "/bookie?tab=results".freeze
   MATCHES_LINK = "/bookie?tab=matches".freeze
   NEW_MATCH_COOLDOWN = 5.minutes
+  SETTLED_COOLDOWN = 10.minutes
   ACHIEVEMENT_MESSAGE = "bookie_achievement_unlocked".freeze
+  SETTLED_MESSAGE = "bookie_bets_settled".freeze
 
   def self.notifications_enabled?(user_id)
     user = User.find_by(id: user_id)
@@ -11,19 +13,36 @@ class BookieNotifier
     user.custom_fields["bookie_notifications_enabled"] != "false"
   end
 
-  def self.notify_match_settled!(match:, bet:, won:, currency_name:)
-    return unless notifications_enabled?(bet.user_id)
+  # One consolidated "Bets settled" notification per affected user, covering
+  # both single bets and accumulator legs. A cooldown collapses several
+  # settlements in a short window into a single ping. Achievement unlocks are
+  # still notified separately (and respect the same on/off preference).
+  def self.notify_bets_settled!(user_ids:)
+    user_ids.compact.uniq.each do |user_id|
+      notify_settled_summary!(user_id)
+      notify_achievement_unlocks!(user_id: user_id)
+    end
+  end
+
+  def self.notify_settled_summary!(user_id)
+    return unless notifications_enabled?(user_id)
+
+    recently_notified =
+      Notification
+        .where(notification_type: Notification.types[:custom], user_id: user_id)
+        .where("created_at >= ?", Time.zone.now - SETTLED_COOLDOWN)
+        .where("data::json ->> 'message' = ?", SETTLED_MESSAGE)
+        .exists?
+    return if recently_notified
 
     create_custom_notification!(
-      user_id: bet.user_id,
-      message: won ? "bookie_match_won" : "bookie_match_lost",
+      user_id: user_id,
+      message: SETTLED_MESSAGE,
       label: DISPLAY_USERNAME,
       description: "Bets settled",
       text: "Bookie — Bets settled",
       link: RESULTS_LINK
     )
-
-    notify_achievement_unlocks!(user_id: bet.user_id)
   end
 
   def self.notify_achievement_unlocks!(user_id:)
