@@ -76,6 +76,17 @@
   {{! ══════════════════════════════════════════════════ }}
   {{#if (eq this.activeTab "matches")}}
   <div class="bookie-panel">
+    <div class="bookie-standings-tabs bookie-betmode-tabs">
+      <button class="bookie-standings-tab {{if (eq this.betMode 'single') 'active'}}"
+              {{on "click" (fn this.setBetMode "single")}}>
+        Single bets
+      </button>
+      <button class="bookie-standings-tab {{if (eq this.betMode 'accumulator') 'active'}}"
+              {{on "click" (fn this.setBetMode "accumulator")}}>
+        Accumulator
+      </button>
+    </div>
+
     {{#if this.matches.length}}
       <div class="bookie-matches-grid">
         {{#each this.matches as |match|}}
@@ -87,7 +98,38 @@
               <span class="bookie-team">{{match.away_team}}</span>
             </div>
 
-            {{#if match.userBet}}
+            {{#if (eq this.betMode "accumulator")}}
+              {{#if match.canBet}}
+                <div class="bookie-odds-row bookie-acca-odds-row">
+                  <button type="button"
+                          class="bookie-odds-btn {{if (eq match.accaChoice 'home') 'in-slip'}}"
+                          {{on "click" (fn this.toggleAccaSelection match "home")}}>
+                    <span class="bookie-odds-team">{{match.home_team}}</span>
+                    <span class="bookie-odds-value">{{match.odds_home}}</span>
+                  </button>
+                  <button type="button"
+                          class="bookie-odds-btn {{if (eq match.accaChoice 'draw') 'in-slip'}}"
+                          {{on "click" (fn this.toggleAccaSelection match "draw")}}>
+                    <span class="bookie-odds-team">Draw</span>
+                    <span class="bookie-odds-value">{{match.odds_draw}}</span>
+                  </button>
+                  <button type="button"
+                          class="bookie-odds-btn {{if (eq match.accaChoice 'away') 'in-slip'}}"
+                          {{on "click" (fn this.toggleAccaSelection match "away")}}>
+                    <span class="bookie-odds-team">{{match.away_team}}</span>
+                    <span class="bookie-odds-value">{{match.odds_away}}</span>
+                  </button>
+                </div>
+                {{#if match.accaChoice}}
+                  <div class="bookie-acca-note bookie-acca-note--added">Added to your accumulator ↓</div>
+                {{else if match.userBet}}
+                  <div class="bookie-acca-note">You already have a single bet on this event.</div>
+                {{/if}}
+              {{else}}
+                <div class="bookie-closed-notice">Betting closed for this event</div>
+              {{/if}}
+            {{else}}
+              {{#if match.userBet}}
               {{! Already placed a bet }}
               <div class="bookie-existing-bet">
                 <div class="bookie-bet-badge bet-{{match.userBet.choice}}">
@@ -151,6 +193,7 @@
             {{else}}
               <div class="bookie-closed-notice">Betting closed for this event</div>
             {{/if}}
+            {{/if}}
 
             <div class="bookie-match-deadline">Closes: {{match.formattedDeadline}}</div>
             {{#if match.total_bets}}
@@ -165,6 +208,65 @@
     {{else}}
       <div class="bookie-empty">
         No events open for betting right now — check back soon!
+      </div>
+    {{/if}}
+
+    {{#if (and (eq this.betMode "accumulator") this.accaSlip.length)}}
+      <div class="bookie-acca-slip">
+        <div class="bookie-acca-slip-header">
+          <span class="bookie-acca-slip-title">🎯 Accumulator</span>
+          <span class="bookie-acca-slip-count">
+            {{this.accaSlip.length}} {{if (eq this.accaSlip.length 1) "selection" "selections"}}
+          </span>
+          <button type="button" class="bookie-acca-slip-clear" {{on "click" this.clearAccaSlip}}>
+            Clear
+          </button>
+        </div>
+
+        <div class="bookie-acca-slip-legs">
+          {{#each this.accaSlip as |leg|}}
+            <div class="bookie-acca-slip-leg">
+              <div class="bookie-acca-slip-leg-info">
+                <span class="bookie-acca-slip-leg-pick">{{leg.choiceLabel}}</span>
+                <span class="bookie-acca-slip-leg-match">{{leg.homeTeam}} vs {{leg.awayTeam}}</span>
+              </div>
+              <span class="bookie-acca-slip-leg-odds">{{leg.odds}}x</span>
+              <button type="button" class="bookie-acca-slip-leg-remove"
+                      title="Remove selection"
+                      {{on "click" (fn this.removeAccaLeg leg)}}>×</button>
+            </div>
+          {{/each}}
+        </div>
+
+        <div class="bookie-acca-slip-summary">
+          <span>Combined odds</span>
+          <strong>{{this.accaCombinedOdds}}x</strong>
+        </div>
+
+        <div class="bookie-acca-slip-controls">
+          <input class="bookie-amount-input bookie-acca-stake-input"
+                 type="number" min="10" max="{{this.balance}}"
+                 placeholder="Stake (min 10)"
+                 value={{this.accaStake}}
+                 {{on "input" this.setAccaStake}} />
+          {{#if this.accaPotentialPayout}}
+            <span class="bookie-payout-preview">
+              Win: {{this.accaPotentialPayout}} {{this.currency}}
+            </span>
+          {{/if}}
+          <button type="button" class="btn btn-primary bookie-place-bet"
+                  disabled={{this.accaPlaceDisabled}}
+                  {{on "click" this.placeAccumulator}}>
+            {{if this.accaPlacing "Placing…" "Place accumulator"}}
+          </button>
+        </div>
+
+        {{#if this.accaNeedsMore}}
+          <div class="bookie-acca-slip-hint">Add at least 2 selections to place an accumulator.</div>
+        {{/if}}
+        {{#if this.accaError}}
+          <div class="bookie-error">{{this.accaError}}</div>
+        {{/if}}
       </div>
     {{/if}}
   </div>
@@ -187,6 +289,10 @@
       <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'achievements') 'active'}}"
               {{on "click" (fn this.setResultsSubTab "achievements")}}>
         Achievements
+      </button>
+      <button class="bookie-standings-tab {{if (eq this.resultsSubTab 'accumulators') 'active'}}"
+              {{on "click" (fn this.setResultsSubTab "accumulators")}}>
+        Accumulators
       </button>
     </div>
 
@@ -420,6 +526,51 @@
           {{/each}}
         </div>
       </div>
+    {{else if (eq this.resultsSubTab "accumulators")}}
+      {{#if this.accumulators.length}}
+        <div class="bookie-acca-list">
+          {{#each this.accumulators as |acc|}}
+            <div class="bookie-acca-card {{acc.statusClass}}">
+              <div class="bookie-acca-card-header">
+                <span class="bookie-acca-card-status">{{acc.statusLabel}}</span>
+                <span class="bookie-acca-card-meta">
+                  {{acc.legs.length}}-leg · {{acc.combined_odds}}x
+                </span>
+              </div>
+
+              <div class="bookie-acca-card-legs">
+                {{#each acc.legs as |leg|}}
+                  <div class="bookie-acca-card-leg">
+                    <span class="bookie-acca-leg-icon {{leg.legStatusClass}}">{{leg.legStatusIcon}}</span>
+                    <span class="bookie-acca-leg-pick">{{leg.choice_label}}</span>
+                    <span class="bookie-acca-leg-match">{{leg.home_team}} vs {{leg.away_team}}</span>
+                    <span class="bookie-acca-leg-odds">{{leg.odds}}x</span>
+                  </div>
+                {{/each}}
+              </div>
+
+              <div class="bookie-acca-card-footer">
+                <div class="bookie-acca-card-figures">
+                  <span class="bookie-acca-card-stake">Stake: {{acc.amount}} {{this.currency}}</span>
+                  {{#if acc.isWon}}
+                    <span class="bookie-acca-card-payout bet-status-won">+{{acc.payout}} {{this.currency}}</span>
+                  {{else if acc.isPending}}
+                    <span class="bookie-acca-card-payout">To win: {{acc.potential_payout}} {{this.currency}}</span>
+                  {{/if}}
+                </div>
+                {{#if acc.isPending}}
+                  <button type="button" class="btn btn-small btn-danger"
+                          {{on "click" (fn this.cancelAccumulator acc)}}>
+                    Cancel
+                  </button>
+                {{/if}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <div class="bookie-empty">No accumulators yet — build one from the Open events tab.</div>
+      {{/if}}
     {{/if}}
   </div>
   {{/if}}
@@ -645,6 +796,25 @@
     <div class="bookie-rules-intro">
       Bookie runs two parallel competitions. Both are purely virtual — no real money involved.
       Every member starts with {{this.currency}} to play with. Good luck! ⚽
+    </div>
+
+    {{! Accumulators }}
+    <div class="bookie-rules-section">
+      <div class="bookie-rules-section-header">
+        <span class="bookie-rules-icon">🎯</span>
+        <h2 class="bookie-rules-title">Accumulators</h2>
+        <span class="bookie-period-pill">New</span>
+      </div>
+      <p class="bookie-rules-tagline">Combine 2+ picks into one bet for a bigger payout — but every leg has to win.</p>
+
+      <h3 class="bookie-rules-subheading">How it works</h3>
+      <ul class="bookie-rules-list">
+        <li>Switch to <strong>Accumulator</strong> mode on the Open events tab and tap an outcome on each event you want to include.</li>
+        <li>Your odds multiply: a 2.00 and a 3.00 pick become a 6.00 accumulator — a 50-coin stake then returns 300 coins.</li>
+        <li><strong>All legs must win.</strong> One wrong pick and the whole accumulator is lost.</li>
+        <li>You earn <strong>+5 League Table points</strong> for landing a full accumulator — small on purpose; accumulators are mainly about the Richest Gooner race.</li>
+        <li>You can cancel an accumulator for a full refund until its first event kicks off. If an event is removed, the accumulator is voided and your stake refunded.</li>
+      </ul>
     </div>
 
     {{! League Table }}

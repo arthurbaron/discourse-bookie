@@ -20,6 +20,8 @@ after_initialize do
     "app/models/bookie_wallet",
     "app/models/bookie_bet",
     "app/models/bookie_transaction",
+    "app/models/bookie_accumulator",
+    "app/models/bookie_accumulator_leg",
     "app/services/bookie_achievements",
     "app/services/bookie_club_resolver",
     "app/services/bookie_notifier",
@@ -43,6 +45,9 @@ after_initialize do
     post   "/bookie/bets"          => "bookie#place_bet"
     delete "/bookie/bets/:id"      => "bookie#cancel_bet"
     put    "/bookie/notifications" => "bookie#update_notifications"
+    get    "/bookie/accumulators"     => "bookie#accumulators"
+    post   "/bookie/accumulators"     => "bookie#place_accumulator"
+    delete "/bookie/accumulators/:id" => "bookie#cancel_accumulator"
 
     # Admin API
     scope "/admin/plugins/bookie", constraints: StaffConstraint.new do

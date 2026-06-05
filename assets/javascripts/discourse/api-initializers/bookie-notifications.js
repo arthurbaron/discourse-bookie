@@ -2,8 +2,9 @@ import { apiInitializer } from "discourse/lib/api";
 import CustomNotification from "discourse/lib/notification-types/custom";
 
 const BOOKIE_MESSAGES = new Set([
-  "bookie_match_won",
-  "bookie_match_lost",
+  "bookie_bets_settled",
+  "bookie_match_won", // legacy — keep so older notifications still render
+  "bookie_match_lost", // legacy
   "bookie_new_match",
   "bookie_achievement_unlocked",
 ]);

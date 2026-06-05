@@ -92,6 +92,7 @@ class AdminBookieController < ApplicationController
 
     ActiveRecord::Base.transaction do
       @match.with_lock do
+        # Refund pending single bets
         @match.bookie_bets.where(status: "pending").find_each do |bet|
           wallet = BookieWallet.find_or_create_for_user(bet.user_id)
           wallet.credit!(
@@ -102,10 +103,32 @@ class AdminBookieController < ApplicationController
           )
         end
 
+        # Void pending accumulators that include this match, refunding each stake once
+        acc_ids = BookieAccumulatorLeg.where(match_id: @match.id).distinct.pluck(:accumulator_id)
+        acc_ids.each do |acc_id|
+          acc = BookieAccumulator.find_by(id: acc_id)
+          next unless acc
+
+          acc.with_lock do
+            next unless acc.status == "pending"
+
+            acc.update!(status: "void", payout: 0, settled_at: Time.zone.now)
+            BookieWallet
+              .find_or_create_for_user(acc.user_id)
+              .credit!(acc.amount, "Accumulator void — event removed: #{@match.title}", type: "acca_void")
+          end
+        end
+
+        # Remove this match's legs so no accumulator points at a deleted match
+        BookieAccumulatorLeg.where(match_id: @match.id).delete_all
+
         @match.destroy!
       end
     end
     render json: { success: true }
+  rescue => e
+    log_internal_error("destroy_match", e)
+    render json: { error: "Could not delete the event right now." }, status: 500
   end
 
   # POST /admin/plugins/bookie/matches/:id/settle

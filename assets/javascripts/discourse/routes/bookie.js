@@ -7,11 +7,13 @@ export default class BookieRoute extends DiscourseRoute {
   };
 
   async model() {
-    const [matchesData, walletData, leaderboardData] = await Promise.all([
-      ajax("/bookie/matches.json"),
-      ajax("/bookie/wallet.json"),
-      ajax("/bookie/leaderboard.json"),
-    ]);
+    const [matchesData, walletData, leaderboardData, accumulatorsData] =
+      await Promise.all([
+        ajax("/bookie/matches.json"),
+        ajax("/bookie/wallet.json"),
+        ajax("/bookie/leaderboard.json"),
+        ajax("/bookie/accumulators.json"),
+      ]);
 
     return {
       matches: matchesData.matches || [],
@@ -21,6 +23,7 @@ export default class BookieRoute extends DiscourseRoute {
       currency: matchesData.currency || "coins",
       wallet: walletData || { transactions: [] },
       leaderboard: leaderboardData || { overall: [], last_month: [] },
+      accumulators: accumulatorsData.accumulators || [],
     };
   }
 

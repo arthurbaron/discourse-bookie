@@ -23,3 +23,11 @@ bookie_currency_name:
 bookie_achievements_started_at:
   default: "2026-05-02T07:30:00Z"
   type: string
+
+bookie_acca_max_legs:
+  default: 8
+  type: integer
+
+bookie_acca_league_points:
+  default: 5
+  type: integer
