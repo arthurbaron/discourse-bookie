@@ -31,3 +31,7 @@ bookie_acca_max_legs:
 bookie_acca_league_points:
   default: 5
   type: integer
+
+bookie_acca_league_min_odds:
+  default: 4.0
+  type: float
