@@ -649,6 +649,7 @@ class BookieController < ApplicationController
       sport_label: match.sport_label,
       sport_icon:  match.sport_icon,
       has_draw:   match.has_draw?,
+      competition: match.competition,
       deadline:   match.deadline.iso8601,
       status:     match.status,
       result:     match.result,

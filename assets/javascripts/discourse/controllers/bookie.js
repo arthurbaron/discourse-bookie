@@ -354,6 +354,7 @@ export default class BookieController extends Controller {
   @tracked nmHomeTeam = "";
   @tracked nmAwayTeam = "";
   @tracked nmTitle = "";
+  @tracked nmCompetition = "";
   @tracked nmOddsHome = "1.90";
   @tracked nmOddsDraw = "3.50";
   @tracked nmOddsAway = "4.00";
@@ -366,6 +367,7 @@ export default class BookieController extends Controller {
   @tracked emHomeTeam = "";
   @tracked emAwayTeam = "";
   @tracked emTitle = "";
+  @tracked emCompetition = "";
   @tracked emOddsHome = "1.90";
   @tracked emOddsDraw = "3.50";
   @tracked emOddsAway = "4.00";
@@ -1047,6 +1049,7 @@ export default class BookieController extends Controller {
           match: {
             title,
             sport: this.nmSport,
+            competition: this.nmCompetition,
             home_team: this.nmHomeTeam,
             away_team: this.nmAwayTeam,
             odds_home: this.nmOddsHome,
@@ -1073,6 +1076,7 @@ export default class BookieController extends Controller {
       this.nmHomeTeam = "";
       this.nmAwayTeam = "";
       this.nmTitle = "";
+      this.nmCompetition = "";
       this.nmOddsHome = "1.90";
       this.nmOddsDraw = "3.50";
       this.nmOddsAway = "4.00";
@@ -1146,6 +1150,7 @@ export default class BookieController extends Controller {
     this.emHomeTeam = match.home_team || "";
     this.emAwayTeam = match.away_team || "";
     this.emTitle = match.title || "";
+    this.emCompetition = match.competition || "";
     this.emOddsHome = String(match.odds_home ?? "1.90");
     this.emOddsDraw = String(match.odds_draw ?? "3.50");
     this.emOddsAway = String(match.odds_away ?? "4.00");
@@ -1159,6 +1164,7 @@ export default class BookieController extends Controller {
     this.emHomeTeam = "";
     this.emAwayTeam = "";
     this.emTitle = "";
+    this.emCompetition = "";
     this.emOddsHome = "1.90";
     this.emOddsDraw = "3.50";
     this.emOddsAway = "4.00";
@@ -1187,6 +1193,7 @@ export default class BookieController extends Controller {
           match: {
             title,
             sport: this.emSport,
+            competition: this.emCompetition,
             home_team: this.emHomeTeam,
             away_team: this.emAwayTeam,
             odds_home: this.emOddsHome,
