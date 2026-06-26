@@ -244,8 +244,15 @@
           <button type="button" class="bookie-acca-slip-clear" {{on "click" this.clearAccaSlip}}>
             Clear
           </button>
+          <button type="button" class="bookie-acca-slip-toggle"
+                  aria-expanded={{if this.accaSlipCollapsed "false" "true"}}
+                  title={{if this.accaSlipCollapsed "Expand" "Collapse"}}
+                  {{on "click" this.toggleAccaSlipCollapsed}}>
+            {{d-icon (if this.accaSlipCollapsed "angle-down" "angle-up")}}
+          </button>
         </div>
 
+        {{#unless this.accaSlipCollapsed}}
         <div class="bookie-acca-slip-legs">
           {{#each this.accaSlip as |leg|}}
             <div class="bookie-acca-slip-leg">
@@ -260,6 +267,7 @@
             </div>
           {{/each}}
         </div>
+        {{/unless}}
 
         <div class="bookie-acca-slip-summary">
           <span>Combined odds</span>
