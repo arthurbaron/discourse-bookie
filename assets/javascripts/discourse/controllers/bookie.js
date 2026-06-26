@@ -255,9 +255,11 @@ function clubSuggestionsFor(clubs, query) {
 }
 
 const BOOKIE_SPORTS = [
-  { key: "football", label: "Football", icon: "⚽", hasDraw: true },
-  { key: "boxing", label: "Boxing", icon: "🥊", hasDraw: false },
-  { key: "tennis", label: "Tennis", icon: "🎾", hasDraw: false },
+  { key: "football", label: "Football", icon: "⚽", hasDraw: true, creatable: true },
+  // Boxing & tennis are kept in the model/UI but disabled for creation for now
+  // (football focus). Flip `creatable` to re-enable them in the admin form.
+  { key: "boxing", label: "Boxing", icon: "🥊", hasDraw: false, creatable: false },
+  { key: "tennis", label: "Tennis", icon: "🎾", hasDraw: false, creatable: false },
 ];
 
 const SPORT_PARTICIPANT_LABELS = {
@@ -677,6 +679,14 @@ export default class BookieController extends Controller {
   // ── Sports / event filter ───────────────────────────
   get bookieSports() {
     return BOOKIE_SPORTS;
+  }
+
+  get creatableSports() {
+    return BOOKIE_SPORTS.filter((s) => s.creatable);
+  }
+
+  get showSportSelect() {
+    return this.creatableSports.length > 1;
   }
 
   get availableSports() {
