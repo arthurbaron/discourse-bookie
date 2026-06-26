@@ -59,10 +59,41 @@ class BookieAchievements
       title: "Richest Gooner Top 3",
       description: "Finish a season in the Richest Gooner top 3.",
       image: "richest-gooner-top3.png"
+    },
+    {
+      key: "acca_starter",
+      title: "Acca Starter",
+      description: "Win your first accumulator.",
+      image: "acca-starter.png"
+    },
+    {
+      key: "long_shot",
+      title: "Long Shot",
+      description: "Win an accumulator at 10.0+ combined odds.",
+      image: "long-shot.png"
+    },
+    {
+      key: "full_slip",
+      title: "Full Slip",
+      description: "Win an accumulator with 5 or more legs.",
+      image: "full-slip.png"
+    },
+    {
+      key: "unstoppable",
+      title: "Unstoppable",
+      description: "Land 8 correct picks in a row.",
+      image: "unstoppable.png"
+    },
+    {
+      key: "high_roller",
+      title: "High Roller",
+      description: "Place a single bet of 1,000+ coins.",
+      image: "high-roller.png"
     }
   ].freeze
 
   DEFAULT_STARTED_AT = "2026-05-02T07:30:00Z".freeze
+  DEFAULT_NEW_BADGES_STARTED_AT = "2026-06-06T00:00:00Z".freeze
 
   def self.payload_for(user_id)
     earned_keys = earned_keys_for(user_id)
@@ -99,6 +130,17 @@ class BookieAchievements
     Time.zone.parse(DEFAULT_STARTED_AT)
   end
 
+  # The 5 newer badges launched later than the original set, so they have their
+  # own (later) start date — existing players must re-trigger them after launch
+  # rather than silently inheriting them for past activity.
+  def self.new_badges_started_at
+    value = SiteSetting.bookie_new_achievements_started_at rescue nil
+    Time.zone.parse(value.to_s).presence ||
+      Time.zone.parse(DEFAULT_NEW_BADGES_STARTED_AT)
+  rescue ArgumentError, TypeError
+    Time.zone.parse(DEFAULT_NEW_BADGES_STARTED_AT)
+  end
+
   def self.image_url(filename)
     "#{Discourse.base_path.presence}/plugins/discourse-bookie/images/achievements/#{filename}"
   end
@@ -133,6 +175,36 @@ class BookieAchievements
       loyal_backer_counts_for(user_id, started_at)
         .max_by { |team, count| [count, team] }
     earned["loyal_backer"] = true if loyal_count.to_i >= 10
+
+    # Newer badges count only from their own (later) launch date, so existing
+    # players must re-trigger them after launch and get the unlock notification.
+    new_started_at = new_badges_started_at
+    new_state = achievement_state_for(user_id, new_started_at)
+
+    earned["unstoppable"] = true if new_state[:best_streak] >= 8
+
+    earned["acca_starter"] = true if BookieAccumulator
+      .where(user_id: user_id, status: "won")
+      .where("created_at >= ?", new_started_at)
+      .exists?
+
+    earned["long_shot"] = true if BookieAccumulator
+      .where(user_id: user_id, status: "won")
+      .where("combined_odds >= ?", 10)
+      .where("created_at >= ?", new_started_at)
+      .exists?
+
+    earned["full_slip"] = true if BookieAccumulator
+      .where(user_id: user_id, status: "won")
+      .where("created_at >= ?", new_started_at)
+      .includes(:bookie_accumulator_legs)
+      .any? { |acc| acc.bookie_accumulator_legs.size >= 5 }
+
+    earned["high_roller"] = true if BookieBet
+      .where(user_id: user_id)
+      .where("created_at >= ?", new_started_at)
+      .where("amount >= ?", 1000)
+      .exists?
 
     earned
   end
