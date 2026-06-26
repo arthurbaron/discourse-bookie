@@ -59,6 +59,36 @@ class BookieAchievements
       title: "Richest Gooner Top 3",
       description: "Finish a season in the Richest Gooner top 3.",
       image: "richest-gooner-top3.png"
+    },
+    {
+      key: "acca_starter",
+      title: "Acca Starter",
+      description: "Win your first accumulator.",
+      image: "acca-starter.png"
+    },
+    {
+      key: "long_shot",
+      title: "Long Shot",
+      description: "Win an accumulator at 10.0+ combined odds.",
+      image: "long-shot.png"
+    },
+    {
+      key: "full_slip",
+      title: "Full Slip",
+      description: "Win an accumulator with 5 or more legs.",
+      image: "full-slip.png"
+    },
+    {
+      key: "unstoppable",
+      title: "Unstoppable",
+      description: "Land 8 correct picks in a row.",
+      image: "unstoppable.png"
+    },
+    {
+      key: "high_roller",
+      title: "High Roller",
+      description: "Place a single bet of 1,000+ coins.",
+      image: "high-roller.png"
     }
   ].freeze
 
@@ -133,6 +163,31 @@ class BookieAchievements
       loyal_backer_counts_for(user_id, started_at)
         .max_by { |team, count| [count, team] }
     earned["loyal_backer"] = true if loyal_count.to_i >= 10
+
+    earned["unstoppable"] = true if state[:best_streak] >= 8
+
+    earned["acca_starter"] = true if BookieAccumulator
+      .where(user_id: user_id, status: "won")
+      .where("created_at >= ?", started_at)
+      .exists?
+
+    earned["long_shot"] = true if BookieAccumulator
+      .where(user_id: user_id, status: "won")
+      .where("combined_odds >= ?", 10)
+      .where("created_at >= ?", started_at)
+      .exists?
+
+    earned["full_slip"] = true if BookieAccumulator
+      .where(user_id: user_id, status: "won")
+      .where("created_at >= ?", started_at)
+      .includes(:bookie_accumulator_legs)
+      .any? { |acc| acc.bookie_accumulator_legs.size >= 5 }
+
+    earned["high_roller"] = true if BookieBet
+      .where(user_id: user_id)
+      .where("created_at >= ?", started_at)
+      .where("amount >= ?", 1000)
+      .exists?
 
     earned
   end
