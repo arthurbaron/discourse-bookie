@@ -14,6 +14,10 @@ class BookieAccumulator < ActiveRecord::Base
     SiteSetting.bookie_acca_max_legs rescue 8
   end
 
+  def self.max_open
+    SiteSetting.bookie_max_open_accas rescue 3
+  end
+
   # Minimum combined odds for a won accumulator to earn League Table points,
   # so trivial favourite-doubles don't hand out free points.
   def self.league_min_odds

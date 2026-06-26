@@ -240,6 +240,11 @@ class BookieController < ApplicationController
     return render_error("An accumulator needs at least #{min_legs} selections.") if legs_input.length < min_legs
     return render_error("An accumulator can have at most #{max_legs} selections.") if legs_input.length > max_legs
 
+    max_open = BookieAccumulator.max_open
+    if BookieAccumulator.where(user_id: current_user.id, status: "pending").count >= max_open
+      return render_error("You can have at most #{max_open} open accumulators at a time — wait for one to settle or cancel it first.")
+    end
+
     seen = {}
     resolved = []
     legs_input.each do |leg|
