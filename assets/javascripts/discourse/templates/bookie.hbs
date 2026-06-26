@@ -107,6 +107,10 @@
         {{#each this.filteredMatches as |match|}}
           <div class="bookie-match-card {{if match.userBet 'has-bet'}}">
 
+            {{#if match.competition}}
+              <div class="bookie-match-competition">{{match.competition}}</div>
+            {{/if}}
+
             <div class="bookie-match-teams">
               <span class="bookie-team">{{match.home_team}}</span>
               <span class="bookie-vs">vs</span>
@@ -1053,10 +1057,10 @@
         {{/if}}
       </div>
       <div class="bookie-form-row">
-        <label>Title (optional — auto-generated if empty)</label>
+        <label>Competition (optional)</label>
         <input class="bookie-input" type="text"
-               value={{this.nmTitle}} placeholder="e.g. Arsenal vs Chelsea — PL GW30"
-               {{on "input" (fn this.updateField "nmTitle")}} />
+               value={{this.nmCompetition}} placeholder="e.g. Premier League · FA Cup · Champions League"
+               {{on "input" (fn this.updateField "nmCompetition")}} />
       </div>
       <div class="bookie-form-row bookie-odds-form-row">
         <div>
@@ -1146,10 +1150,11 @@
                 {{/if}}
               </div>
               <div class="bookie-form-row bookie-admin-edit-title">
-                <label>Title</label>
+                <label>Competition (optional)</label>
                 <input class="bookie-input" type="text"
-                       value={{this.emTitle}}
-                       {{on "input" (fn this.updateField "emTitle")}} />
+                       value={{this.emCompetition}}
+                       placeholder="e.g. Premier League · FA Cup"
+                       {{on "input" (fn this.updateField "emCompetition")}} />
               </div>
               <div class="bookie-form-row">
                 <label>Home odds</label>
@@ -1202,6 +1207,9 @@
             <div class="bookie-admin-card-layout">
               <div class="bookie-admin-match-info">
                 <strong class="bookie-admin-match-title">{{match.sport_icon}} {{match.title}}</strong>
+                {{#if match.competition}}
+                  <span class="bookie-admin-competition">{{match.competition}}</span>
+                {{/if}}
                 <span class="bookie-admin-odds">
                   Home {{match.odds_home}}{{#if match.has_draw}} · Draw {{match.odds_draw}}{{/if}} · Away {{match.odds_away}}
                 </span>

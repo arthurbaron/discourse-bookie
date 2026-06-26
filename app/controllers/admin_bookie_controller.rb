@@ -239,7 +239,7 @@ class AdminBookieController < ApplicationController
     params.require(:match).permit(
       :title, :home_team, :away_team,
       :odds_home, :odds_draw, :odds_away,
-      :deadline, :sport
+      :deadline, :sport, :competition
     )
   end
 
@@ -263,6 +263,7 @@ class AdminBookieController < ApplicationController
       sport_label:  match.sport_label,
       sport_icon:   match.sport_icon,
       has_draw:     match.has_draw?,
+      competition:  match.competition,
       deadline:     match.deadline.iso8601,
       status:       match.status,
       result:       match.result,

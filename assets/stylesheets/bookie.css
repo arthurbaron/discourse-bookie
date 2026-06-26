@@ -272,6 +272,24 @@
   text-align: center;
 }
 
+.bookie-match-competition {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary-medium);
+  margin-bottom: -0.6rem;
+}
+
+.bookie-admin-competition {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary-medium);
+}
+
 /* ── Bet form ─────────────────────────────────────────── */
 
 .bookie-odds-row {
