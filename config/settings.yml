@@ -39,3 +39,7 @@ bookie_acca_league_min_odds:
 bookie_max_open_accas:
   default: 3
   type: integer
+
+bookie_new_achievements_started_at:
+  default: "2026-06-06T00:00:00Z"
+  type: string
