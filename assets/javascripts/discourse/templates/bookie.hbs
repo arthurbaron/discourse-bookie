@@ -843,7 +843,7 @@
         <li>Switch to <strong>Accumulator</strong> mode on the Open events tab and tap an outcome on each event you want to include.</li>
         <li>Your odds multiply: a 2.00 and a 3.00 pick become a 6.00 accumulator — a 50-coin stake then returns 300 coins.</li>
         <li><strong>All legs must win.</strong> One wrong pick and the whole accumulator is lost.</li>
-        <li>Land a higher-odds <strong>all-football</strong> accumulator (combined odds of <strong>4.0+</strong>) and you also earn <strong>+5 League Table points</strong> — small on purpose; accumulators are mainly about the Richest Gooner race. Mixed-sport accas pay out in coins only.</li>
+        <li>Land a higher-odds accumulator (combined odds of <strong>4.0+</strong>) and you also earn <strong>+5 League Table points</strong> — small on purpose; accumulators are mainly about the Richest Gooner race.</li>
         <li>You can cancel an accumulator for a full refund until its first event kicks off. If an event is removed, the accumulator is voided and your stake refunded.</li>
       </ul>
     </div>
@@ -891,7 +891,7 @@
           <span class="bookie-rules-pts">+5</span>
           <div>
             <strong>Accumulator</strong>
-            <span>Land a full <strong>all-football</strong> accumulator at 4.0+ combined odds. See the Accumulators section below.</span>
+            <span>Land a full accumulator at 4.0+ combined odds. See the Accumulators section below.</span>
           </div>
         </div>
       </div>
@@ -903,9 +903,6 @@
       </p>
 
       <h3 class="bookie-rules-subheading">Important notes</h3>
-      <p class="bookie-rules-body">
-        <strong>Football only.</strong> The League Table is our football prediction ladder — boxing and tennis don't earn League points. They still pay out in coins, so they count towards <strong>Richest Gooner</strong> instead.
-      </p>
       <p class="bookie-rules-body">
         Bet size does not affect your points. A minimum 10-coin bet on an event earns the same points as a max bet.
         The league table is purely about picking the right outcome, not risk-taking.
@@ -999,10 +996,11 @@
     {{#if (eq this.adminSubTab "events")}}
     <h2>Create new event</h2>
     <div class="bookie-admin-form">
+      {{#if this.showSportSelect}}
       <div class="bookie-form-row">
         <label>Sport</label>
         <div class="bookie-sport-select">
-          {{#each this.bookieSports as |sport|}}
+          {{#each this.creatableSports as |sport|}}
             <button type="button"
                     class="bookie-standings-tab {{if (eq this.nmSport sport.key) 'active'}}"
                     {{on "click" (fn this.updateFieldValue "nmSport" sport.key)}}>
@@ -1011,6 +1009,7 @@
           {{/each}}
         </div>
       </div>
+      {{/if}}
       <div class="bookie-form-row">
         <label>{{this.nmHomeLabel}}</label>
         <input class="bookie-input" type="text"
