@@ -91,6 +91,7 @@ class BookieLeagueEntry < ActiveRecord::Base
         pts += 8  if streak == 3
         pts += 18 if streak == 5
         pts += 35 if streak == 8
+        pts += 5  if streak > 8   # keep rewarding long streaks, flat (no runaway)
       else
         entry.current_streak = 0  # streak broken
       end

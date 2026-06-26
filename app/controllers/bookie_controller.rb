@@ -619,6 +619,8 @@ class BookieController < ApplicationController
         breakdown << { points: 18, label: "winning streak (5 games)" }
       elsif streak == 8
         breakdown << { points: 35, label: "winning streak (8 games)" }
+      elsif streak > 8
+        breakdown << { points: 5, label: "streak continued" }
       end
     else
       streak = 0
