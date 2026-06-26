@@ -325,6 +325,7 @@ export default class BookieController extends Controller {
   @tracked accaStake = "";
   @tracked accaError = null;
   @tracked accaPlacing = false;
+  @tracked accaSlipCollapsed = false;
   @tracked accumulators = [];
   @tracked sportFilter = "all";
   // Standings state
@@ -588,6 +589,7 @@ export default class BookieController extends Controller {
     this.accaStake = "";
     this.accaError = null;
     this.accaPlacing = false;
+    this.accaSlipCollapsed = false;
     this.matches.forEach((m) => (m.accaChoice = null));
     this.accumulators = (model.accumulators || []).map((a) =>
       decorateAccumulator(a)
@@ -881,6 +883,11 @@ export default class BookieController extends Controller {
   @action
   setSportFilter(sport) {
     this.sportFilter = sport;
+  }
+
+  @action
+  toggleAccaSlipCollapsed() {
+    this.accaSlipCollapsed = !this.accaSlipCollapsed;
   }
 
   @action

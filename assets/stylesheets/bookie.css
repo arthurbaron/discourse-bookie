@@ -2481,6 +2481,23 @@
   text-underline-offset: 0.12em;
 }
 
+.bookie-acca-slip-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  padding: 0 0.15rem;
+  margin-left: 0.5rem;
+  color: var(--primary-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.bookie-acca-slip-toggle:hover {
+  color: var(--primary);
+}
+
 .bookie-acca-slip-legs {
   display: flex;
   flex-direction: column;
