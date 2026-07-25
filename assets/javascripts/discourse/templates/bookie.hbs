@@ -665,9 +665,9 @@
               {{on "click" (fn this.setStandingsTab "league-table")}}>
         League Table
       </button>
-      <button class="bookie-standings-tab {{if (eq this.standingsTab 'richest-gooner') 'active'}}"
-              {{on "click" (fn this.setStandingsTab "richest-gooner")}}>
-        Richest Gooner
+      <button class="bookie-standings-tab {{if (eq this.standingsTab 'money-sprint') 'active'}}"
+              {{on "click" (fn this.setStandingsTab "money-sprint")}}>
+        Money Sprint
       </button>
     </div>
 
@@ -765,14 +765,14 @@
     </div>
     {{/if}}
 
-    {{! ── Richest Gooner ── }}
-    {{#if (eq this.standingsTab "richest-gooner")}}
+    {{! ── Money Sprint ── }}
+    {{#if (eq this.standingsTab "money-sprint")}}
     <div class="bookie-standings-card">
       <div class="bookie-standings-card-header">
         <div>
-          <h2 class="bookie-standings-title">Richest Gooner</h2>
+          <h2 class="bookie-standings-title">Money Sprint</h2>
           <p class="bookie-standings-desc">
-            Runs across the full season. Ranked by total coins.
+            Most {{this.currency}} won this month. Everyone starts back at zero on the 1st.
             <button type="button"
                     class="bookie-inline-link"
                     {{on "click" (fn this.setTab "rules")}}>
@@ -780,12 +780,12 @@
             </button>
           </p>
         </div>
-        <span class="bookie-period-pill">Season-long ranking</span>
+        <span class="bookie-period-pill">{{this.sprintMonthLabel}}</span>
       </div>
 
-      {{#if this.richestPodium.length}}
+      {{#if this.sprintPodium.length}}
         <div class="bookie-podium">
-          {{#each this.richestPodium as |entry|}}
+          {{#each this.sprintPodium as |entry|}}
             <div class="bookie-podium-card rank-{{entry.rank}}">
               <span class="bookie-podium-rank-num">{{entry.rank}}</span>
               <span class="bookie-podium-medal">
@@ -795,26 +795,63 @@
                 {{#if (eq entry.rank 1)}}1st{{else if (eq entry.rank 2)}}2nd{{else}}3rd{{/if}}
               </span>
               <span class="bookie-podium-name">{{entry.username}}</span>
-              <span class="bookie-podium-value">{{entry.balance}} {{this.currency}}</span>
+              <span class="bookie-podium-value bookie-podium-value--profit {{entry.profitClass}}">{{entry.profitText}} {{this.currency}}</span>
             </div>
           {{/each}}
         </div>
 
-        {{#if this.richestRest.length}}
+        {{#if this.sprintRest.length}}
         <table class="bookie-lb-table bookie-standings-rest">
           <tbody>
-            {{#each this.richestRest as |entry|}}
+            {{#each this.sprintRest as |entry|}}
               <tr>
                 <td class="lb-rank-cell">#{{entry.rank}}</td>
                 <td><a href="/u/{{entry.username}}">{{entry.username}}</a></td>
-                <td class="lb-balance">{{entry.balance}} {{this.currency}}</td>
+                <td class="lb-balance {{entry.profitClass}}">
+                  {{entry.profitText}} {{this.currency}}
+                </td>
               </tr>
             {{/each}}
           </tbody>
         </table>
         {{/if}}
       {{else}}
-        <div class="bookie-empty">No data yet — place your first bet!</div>
+        <div class="bookie-empty">
+          No settled bets yet this month — the sprint starts with your first result!
+        </div>
+      {{/if}}
+
+      {{! ── Previous sprints ── }}
+      {{#if this.sprintHistory.length}}
+        <div class="bookie-prev-period">
+          <h3 class="bookie-prev-period-title">Previous sprints</h3>
+
+          <div class="bookie-period-selector">
+            {{#each this.sprintHistory as |month|}}
+              <button
+                class="bookie-period-pill-btn {{if (eq this.effectiveSprintMonth month.month_key) 'active'}}"
+                {{on "click" (fn this.selectSprintMonth month.month_key)}}>
+                {{month.label}}
+              </button>
+            {{/each}}
+          </div>
+
+          {{#if this.selectedSprint}}
+            <div class="bookie-prev-period-list">
+              {{#each this.selectedSprint.top3 as |entry|}}
+                <div class="bookie-prev-period-row">
+                  <span class="bookie-prev-medal">
+                    {{#if (eq entry.rank 1)}}🥇{{else if (eq entry.rank 2)}}🥈{{else}}🥉{{/if}}
+                  </span>
+                  <span class="bookie-prev-name">
+                    <a href="/u/{{entry.username}}">{{entry.username}}</a>
+                  </span>
+                  <span class="bookie-prev-pts">{{entry.profit}} {{this.currency}}</span>
+                </div>
+              {{/each}}
+            </div>
+          {{/if}}
+        </div>
       {{/if}}
     </div>
     {{/if}}
@@ -847,7 +884,7 @@
         <li>Switch to <strong>Accumulator</strong> mode on the Open events tab and tap an outcome on each event you want to include.</li>
         <li>Your odds multiply: a 2.00 and a 3.00 pick become a 6.00 accumulator — a 50-coin stake then returns 300 coins.</li>
         <li><strong>All legs must win.</strong> One wrong pick and the whole accumulator is lost.</li>
-        <li>Land a higher-odds accumulator (combined odds of <strong>4.0+</strong>) and you also earn <strong>+5 League Table points</strong> — small on purpose; accumulators are mainly about the Richest Gooner race.</li>
+        <li>Land a higher-odds accumulator (combined odds of <strong>4.0+</strong>) and you also earn <strong>+5 League Table points</strong> — small on purpose; accumulators are mainly about the Money Sprint.</li>
         <li>You can cancel an accumulator for a full refund until its first event kicks off. If an event is removed, the accumulator is voided and your stake refunded.</li>
       </ul>
     </div>
@@ -913,14 +950,23 @@
       </p>
     </div>
 
-    {{! Richest Gooner }}
+    {{! Money Sprint }}
     <div class="bookie-rules-section">
       <div class="bookie-rules-section-header">
         <span class="bookie-rules-icon">💰</span>
-        <h2 class="bookie-rules-title">Richest Gooner</h2>
-        <span class="bookie-period-pill">Season-long</span>
+        <h2 class="bookie-rules-title">Money Sprint</h2>
+        <span class="bookie-period-pill">Resets every month</span>
       </div>
-      <p class="bookie-rules-tagline">Ranked by your current coin balance. Runs all season — never resets.</p>
+      <p class="bookie-rules-tagline">Who wins the most {{this.currency}} this month? A fresh race every month.</p>
+
+      <h3 class="bookie-rules-subheading">How it works</h3>
+      <ul class="bookie-rules-list">
+        <li>You're ranked on your <strong>net profit for the month</strong> — everything you win minus everything you stake.</li>
+        <li>Every month <strong>everyone starts back at zero</strong> on the 1st, so a bad month is never the end of your run. Your wallet keeps going as normal — only the scoreboard resets.</li>
+        <li>Only <strong>settled bets</strong> count, in the month they settle: singles and accumulators alike. Weekly bonuses, gifted {{this.currency}} and refunds don't count — this is about your betting, not handouts.</li>
+        <li>Level on profit? The player who got there in <strong>fewer bets</strong> ranks higher.</li>
+        <li>At the end of each month the <strong>top 3 are saved</strong> as winners — you can browse past sprints in the Standings tab.</li>
+      </ul>
 
       <h3 class="bookie-rules-subheading">How coins work</h3>
       <div class="bookie-rules-grid">
@@ -956,7 +1002,7 @@
 
       <h3 class="bookie-rules-subheading">Strategy</h3>
       <p class="bookie-rules-body">
-        Unlike the League Table, Richest Gooner rewards risk management. Chasing long shots can win you a fortune or wipe you out. Steady, disciplined betting often beats going all-in.
+        Where the League Table rewards being right, the Money Sprint rewards how you stake. Chasing long shots can win you the month or sink it, and because it's only four weeks, one big call carries real weight. Bet size matters here — unlike the League Table, a 500-coin win counts for far more than a 10-coin one.
       </p>
     </div>
 
@@ -1341,6 +1387,39 @@
           </p>
         {{/if}}
       </div>
+
+      <h2 class="bookie-section-title">Sprint management</h2>
+      <div class="bookie-season-card">
+        {{#if this.closableSprintLabel}}
+          <div class="bookie-season-info">
+            <span class="bookie-season-label">Finished month</span>
+            <span class="bookie-season-key">{{this.closableSprintLabel}}</span>
+          </div>
+
+          {{#if this.closableSprintClosed}}
+            <div class="bookie-season-closed-notice">
+              ✅ Sprint {{this.closableSprintLabel}} is already closed.
+            </div>
+          {{else}}
+            <p class="bookie-season-desc">
+              This snapshots the top 3 for the finished Money Sprint month so it appears under previous sprints.
+            </p>
+            <button class="btn btn-primary"
+                    disabled={{this.sprintClosing}}
+                    {{on "click" this.closeCurrentSprint}}>
+              {{#if this.sprintClosing}}
+                Closing sprint…
+              {{else}}
+                Close sprint {{this.closableSprintLabel}}
+              {{/if}}
+            </button>
+          {{/if}}
+        {{else}}
+          <p class="bookie-season-desc">
+            No finished month is waiting to be closed right now.
+          </p>
+        {{/if}}
+      </div>
     </div>
 
     {{! ── Season management ── }}
@@ -1358,7 +1437,7 @@
           </div>
         {{else}}
           <p class="bookie-season-desc">
-            Closing the season saves the Richest Gooner top 3 as permanent winners
+            Closing the season saves the season top 3 by balance as permanent winners
             and resets all wallet balances to the starting amount.
             The League Table resets automatically every two months.
           </p>

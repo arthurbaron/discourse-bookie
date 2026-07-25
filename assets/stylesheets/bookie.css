@@ -2106,6 +2106,26 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
+/* Money Sprint profit on the podium: the theme's green/red has poor contrast
+   on the gold/silver/bronze cards, so the value sits in a dark pill (same
+   pattern as the rank pill) with brighter tints. Verified at AA or better on
+   all three podium colours. */
+.bookie-podium-value--profit {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.bookie-podium-value--profit.bet-status-won {
+  color: #7ff0b3;
+}
+
+.bookie-podium-value--profit.bet-status-lost {
+  color: #ffc4b5;
+}
+
 /* ── Rest of table (#4+) ─────────────────────────────────────────────────── */
 .bookie-standings-rest {
   width: 100%;

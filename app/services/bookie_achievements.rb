@@ -57,8 +57,11 @@ class BookieAchievements
     {
       key: "richest_gooner_top3",
       title: "Richest Gooner Top 3",
-      description: "Finish a season in the Richest Gooner top 3.",
-      image: "richest-gooner-top3.png"
+      description: "Finished a season in the Richest Gooner top 3 — a retired competition.",
+      image: "richest-gooner-top3.png",
+      # Retired: the Money Sprint replaced Richest Gooner, so this can no longer
+      # be won. Legacy badges only appear for the players who already hold them.
+      legacy: true
     },
     {
       key: "acca_starter",
@@ -89,6 +92,12 @@ class BookieAchievements
       title: "High Roller",
       description: "Place a single bet of 1,000+ coins.",
       image: "high-roller.png"
+    },
+    {
+      key: "sprint_winner",
+      title: "Sprint Winner",
+      description: "Finish #1 in a Monthly Money Sprint.",
+      image: "sprint-winner.png"
     }
   ].freeze
 
@@ -98,7 +107,11 @@ class BookieAchievements
   def self.payload_for(user_id)
     earned_keys = earned_keys_for(user_id)
 
-    DEFINITIONS.map do |achievement|
+    DEFINITIONS
+      # Retired badges only show for the players who already hold them, so
+      # everyone else doesn't stare at a slot that can never be unlocked.
+      .reject { |a| a[:legacy] && !earned_keys.key?(a[:key]) }
+      .map do |achievement|
       {
         key: achievement[:key],
         title: achievement[:title],
@@ -162,9 +175,11 @@ class BookieAchievements
       .where(user_id: user_id, rank: 1)
       .where("created_at >= ?", started_at)
       .exists?
+    # Retired badge, so no date gate: the competition can no longer be won and
+    # this reads season snapshots only, meaning the historical Richest Gooner
+    # winners simply keep it regardless of when their season was closed.
     earned["richest_gooner_top3"] = true if BookieSeasonSnapshot
       .where(user_id: user_id, rank: 1..3)
-      .where("created_at >= ?", started_at)
       .exists?
 
     _best_team_name, best_team_profit =
@@ -204,6 +219,12 @@ class BookieAchievements
       .where(user_id: user_id)
       .where("created_at >= ?", new_started_at)
       .where("amount >= ?", 1000)
+      .exists?
+
+    # No date gating needed: sprint snapshots only start existing once the
+    # Money Sprint launches, so nothing can unlock retroactively.
+    earned["sprint_winner"] = true if BookieSprintSnapshot
+      .where(user_id: user_id, rank: 1)
       .exists?
 
     earned

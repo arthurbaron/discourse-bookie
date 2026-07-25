@@ -32,22 +32,28 @@ export default apiInitializer("0.11.1", (api) => {
         ajax("/bookie/leaderboard.json")
           .then((data) => {
             const leagueTable  = data.league_table   || [];
-            const richest      = data.richest_gooner  || [];
+            const sprint       = data.sprint          || [];
             const currency     = data.currency        || "coins";
             const periodLabel  = data.current_period_label || "";
+            const sprintLabel  = data.sprint_month_label   || "";
 
-            function renderRows(entries, valueKey, unit) {
+            function renderRows(entries, valueKey, unit, signed) {
               if (!entries.length) {
                 return '<div class="bookie-widget-empty">No data yet.</div>';
               }
               const medals = ["🥇", "🥈", "🥉"];
               return `<ol class="blw-list">
-                ${entries.slice(0, 5).map((u, i) => `
+                ${entries.slice(0, 5).map((u, i) => {
+                  const raw = u[valueKey];
+                  const value =
+                    signed && Number(raw) > 0 ? `+${raw}` : `${raw}`;
+                  return `
                   <li class="blw-row ${i < 3 ? "blw-top rank-" + (i + 1) : ""}">
                     <span class="blw-rank">${medals[i] || "#" + u.rank}</span>
                     <span class="blw-name">${u.username}</span>
-                    <span class="blw-val">${u[valueKey]} ${unit}</span>
-                  </li>`).join("")}
+                    <span class="blw-val">${value} ${unit}</span>
+                  </li>`;
+                }).join("")}
               </ol>`;
             }
 
@@ -55,10 +61,13 @@ export default apiInitializer("0.11.1", (api) => {
               w.querySelectorAll(".blw-tab").forEach((t) => t.classList.remove("active"));
               w.querySelector(`.blw-tab[data-tab="${tab}"]`).classList.add("active");
               const content = w.querySelector(".blw-content");
+              const label = w.querySelector(".blw-period");
               if (tab === "league") {
                 content.innerHTML = renderRows(leagueTable, "points", "pts");
+                if (label) label.textContent = periodLabel;
               } else {
-                content.innerHTML = renderRows(richest, "balance", currency);
+                content.innerHTML = renderRows(sprint, "profit", currency, true);
+                if (label) label.textContent = sprintLabel;
               }
             }
 
@@ -69,9 +78,9 @@ export default apiInitializer("0.11.1", (api) => {
               </div>
               <div class="blw-tabs">
                 <button class="blw-tab active" data-tab="league">League Table</button>
-                <button class="blw-tab" data-tab="richest">Richest Gooner</button>
+                <button class="blw-tab" data-tab="sprint">Money Sprint</button>
               </div>
-              ${periodLabel ? `<div class="blw-period">${periodLabel}</div>` : ""}
+              <div class="blw-period">${periodLabel}</div>
               <div class="blw-content"></div>
             `;
 

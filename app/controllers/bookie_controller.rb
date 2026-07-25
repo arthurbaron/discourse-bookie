@@ -60,15 +60,39 @@ class BookieController < ApplicationController
 
   # GET /bookie/leaderboard
   def leaderboard
-    # ── Richest Gooner (season-long coin balance) ──────────────────────────
-    richest = BookieWallet
-      .joins("JOIN users ON users.id = bookie_wallets.user_id")
-      .joins("JOIN bookie_bets ON bookie_bets.user_id = bookie_wallets.user_id")
-      .where("users.active = true AND (users.silenced_till IS NULL OR users.silenced_till < ?)", Time.now)
-      .distinct
-      .order(balance: :desc)
-      .limit(50)
+    # ── Money Sprint (net coin profit this calendar month) ─────────────────
+    current_month = BookieSprint.current_month_key
+    sprint_rows   = BookieSprint.standings_for(current_month)
+
+    sprint_users = User
+      .where(id: sprint_rows.map { |row| row[:user_id] }, active: true)
+      .where("silenced_till IS NULL OR silenced_till < ?", Time.zone.now)
+      .index_by(&:id)
+
+    sprint_table = sprint_rows
+      .select { |row| sprint_users.key?(row[:user_id]) }
+      .map
+      .with_index(1) do |row, index|
+        user = sprint_users[row[:user_id]]
+        { rank: index, username: user.username, profit: row[:profit],
+          bets_count: row[:bets_count], avatar_template: user.avatar_template }
+      end
+
+    sprint_history = BookieSprintSnapshot
       .includes(:user)
+      .where.not(month_key: current_month)
+      .order(month_key: :desc, rank: :asc)
+      .group_by(&:month_key)
+      .map do |key, entries|
+        {
+          month_key: key,
+          label:     BookieSprint.month_label_for(key),
+          top3:      entries.first(3).map do |snapshot|
+            { rank: snapshot.rank, username: snapshot.user.username,
+              profit: snapshot.profit, avatar_template: snapshot.user.avatar_template }
+          end
+        }
+      end
 
     # ── League Table (current period points) ───────────────────────────────
     current_period = BookieLeagueEntry.current_period_key
@@ -101,11 +125,11 @@ class BookieController < ApplicationController
       .reverse
 
     render json: {
-      # Richest Gooner
-      richest_gooner: richest.map.with_index(1) do |w, i|
-        { rank: i, username: w.user.username, balance: w.balance,
-          avatar_template: w.user.avatar_template }
-      end,
+      # Money Sprint – current month
+      sprint:               sprint_table,
+      sprint_month_key:     current_month,
+      sprint_month_label:   BookieSprint.month_label_for(current_month),
+      sprint_history:       sprint_history,
 
       # League Table – current period
       league_table: league_current.map.with_index(1) do |e, i|
