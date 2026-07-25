@@ -362,6 +362,10 @@ export default class BookieController extends Controller {
   @tracked closablePeriodLabel = null;
   @tracked closablePeriodClosed = false;
   @tracked periodClosing = false;
+  @tracked closableSprintMonth = null;
+  @tracked closableSprintLabel = null;
+  @tracked closableSprintClosed = false;
+  @tracked sprintClosing = false;
   @tracked nmSport = "football";
   @tracked nmHomeTeam = "";
   @tracked nmAwayTeam = "";
@@ -1302,6 +1306,9 @@ export default class BookieController extends Controller {
       this.closablePeriodKey = data.closable_period_key || null;
       this.closablePeriodLabel = data.closable_period_label || null;
       this.closablePeriodClosed = Boolean(data.closable_period_closed);
+      this.closableSprintMonth = data.closable_sprint_month || null;
+      this.closableSprintLabel = data.closable_sprint_label || null;
+      this.closableSprintClosed = Boolean(data.closable_sprint_closed);
     } catch (_e) {
       // silently fail
     }
@@ -1340,6 +1347,42 @@ export default class BookieController extends Controller {
         e.jqXHR?.responseJSON?.error || "Failed to close the current period.";
     } finally {
       this.periodClosing = false;
+    }
+  }
+
+  @action
+  async closeCurrentSprint() {
+    if (!this.closableSprintMonth || this.closableSprintClosed) {
+      this.adminError = "No finished month is ready to close.";
+      return;
+    }
+
+    if (
+      !confirm(
+        `Close sprint ${this.closableSprintLabel}?\n\n` +
+        `This will snapshot the top 3 for the Money Sprint and mark the month as completed.`
+      )
+    ) {
+      return;
+    }
+
+    this.sprintClosing = true;
+    try {
+      const result = await ajax("/admin/plugins/bookie/sprint/close.json", {
+        type: "POST",
+        data: { month_key: this.closableSprintMonth },
+      });
+
+      this.closableSprintClosed = true;
+      this.adminError = null;
+      await this.refreshLeaderboard();
+      await this.loadSeasonStatus();
+      alert(`Sprint ${result.month_label} has been closed.`);
+    } catch (e) {
+      this.adminError =
+        e.jqXHR?.responseJSON?.error || "Failed to close the sprint.";
+    } finally {
+      this.sprintClosing = false;
     }
   }
 

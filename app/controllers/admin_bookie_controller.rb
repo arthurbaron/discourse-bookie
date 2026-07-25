@@ -166,6 +166,11 @@ class AdminBookieController < ApplicationController
       .limit(5)
       .pluck(:season_key)
 
+    closable_sprint_month = BookieSprint.closable_month_key
+    closable_sprint_closed =
+      closable_sprint_month.present? &&
+      BookieSprintSnapshot.where(month_key: closable_sprint_month).exists?
+
     render json: {
       current_season_key: season_key,
       already_closed:     existing,
@@ -173,8 +178,42 @@ class AdminBookieController < ApplicationController
       closable_period_key: closable_period_key,
       closable_period_label:
         closable_period_key ? BookieLeagueEntry.period_label_for(closable_period_key) : nil,
-      closable_period_closed: closable_period_closed
+      closable_period_closed: closable_period_closed,
+      closable_sprint_month: closable_sprint_month,
+      closable_sprint_label:
+        closable_sprint_month ? BookieSprint.month_label_for(closable_sprint_month) : nil,
+      closable_sprint_closed: closable_sprint_closed
     }
+  end
+
+  # POST /admin/plugins/bookie/sprint/close
+  def close_sprint
+    month_key = params[:month_key].presence || BookieSprint.closable_month_key
+
+    if month_key.blank?
+      return render json: { error: "No finished month is ready to close." }, status: 422
+    end
+
+    if BookieSprintSnapshot.where(month_key: month_key).exists?
+      return render json: { error: "Sprint #{month_key} has already been closed." }, status: 422
+    end
+
+    BookieSprint.close_month!(month_key)
+    BookieSprintSnapshot
+      .where(month_key: month_key)
+      .pluck(:user_id)
+      .each do |user_id|
+        BookieNotifier.notify_achievement_unlocks!(user_id: user_id)
+      end
+
+    render json: {
+      success: true,
+      month_key: month_key,
+      month_label: BookieSprint.month_label_for(month_key)
+    }
+  rescue => e
+    log_internal_error("close_sprint", e)
+    render json: { error: "Could not close the sprint right now." }, status: 500
   end
 
   # POST /admin/plugins/bookie/period/close

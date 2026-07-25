@@ -1387,6 +1387,39 @@
           </p>
         {{/if}}
       </div>
+
+      <h2 class="bookie-section-title">Sprint management</h2>
+      <div class="bookie-season-card">
+        {{#if this.closableSprintLabel}}
+          <div class="bookie-season-info">
+            <span class="bookie-season-label">Finished month</span>
+            <span class="bookie-season-key">{{this.closableSprintLabel}}</span>
+          </div>
+
+          {{#if this.closableSprintClosed}}
+            <div class="bookie-season-closed-notice">
+              ✅ Sprint {{this.closableSprintLabel}} is already closed.
+            </div>
+          {{else}}
+            <p class="bookie-season-desc">
+              This snapshots the top 3 for the finished Money Sprint month so it appears under previous sprints.
+            </p>
+            <button class="btn btn-primary"
+                    disabled={{this.sprintClosing}}
+                    {{on "click" this.closeCurrentSprint}}>
+              {{#if this.sprintClosing}}
+                Closing sprint…
+              {{else}}
+                Close sprint {{this.closableSprintLabel}}
+              {{/if}}
+            </button>
+          {{/if}}
+        {{else}}
+          <p class="bookie-season-desc">
+            No finished month is waiting to be closed right now.
+          </p>
+        {{/if}}
+      </div>
     </div>
 
     {{! ── Season management ── }}

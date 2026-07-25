@@ -57,6 +57,7 @@ after_initialize do
       post   "/matches"            => "admin_bookie#create_match"
       post   "/grant-all"          => "admin_bookie#grant_all"
       post   "/period/close"       => "admin_bookie#close_period"
+      post   "/sprint/close"       => "admin_bookie#close_sprint"
       put    "/matches/:id"        => "admin_bookie#update_match"
       delete "/matches/:id"        => "admin_bookie#destroy_match"
       post   "/matches/:id/settle" => "admin_bookie#settle_match"
