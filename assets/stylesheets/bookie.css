@@ -2157,6 +2157,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Money Sprint profit needs to beat the muted colour above, which is more
+   specific than the plain .bet-status-* classes. The rest table sits on a
+   neutral background, so the theme green/red is fine here. */
+.bookie-standings-rest .lb-balance.bet-status-won {
+  color: var(--success);
+}
+
+.bookie-standings-rest .lb-balance.bet-status-lost {
+  color: var(--danger);
+}
+
 @media (max-width: 600px) {
   .bookie-standings-tabs {
     overflow-x: auto;
