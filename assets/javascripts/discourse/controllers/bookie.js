@@ -277,6 +277,15 @@ function participantLabels(key) {
   return SPORT_PARTICIPANT_LABELS[key] || SPORT_PARTICIPANT_LABELS.football;
 }
 
+function decorateSprintRow(row) {
+  const profit = Number(row.profit) || 0;
+  return {
+    ...row,
+    profitText: `${profit > 0 ? "+" : ""}${profit}`,
+    profitClass: profit >= 0 ? "bet-status-won" : "bet-status-lost",
+  };
+}
+
 function decorateAccumulator(acc) {
   const statusLabels = {
     pending: "Pending",
@@ -333,7 +342,10 @@ export default class BookieController extends Controller {
   // Standings state
   @tracked standingsTab = "league-table";
   @tracked leagueTable = [];
-  @tracked richestGooner = [];
+  @tracked sprintTable = [];
+  @tracked sprintMonthLabel = "";
+  @tracked sprintHistory = [];        // [{month_key, label, top3}] newest first
+  @tracked selectedSprintMonth = null; // null = most recent
   @tracked currentPeriodLabel = "";
   @tracked periodHistory = [];       // [{period_key, label, top3}] newest first
   @tracked selectedPeriodKey = null; // null = auto-select most recent
@@ -379,8 +391,21 @@ export default class BookieController extends Controller {
   // Computed podium/rest slices (used by template)
   get leaguePodium() { return this.leagueTable.slice(0, 3); }
   get leagueRest()   { return this.leagueTable.slice(3); }
-  get richestPodium() { return this.richestGooner.slice(0, 3); }
-  get richestRest()   { return this.richestGooner.slice(3); }
+  get sprintPodium() { return this.sprintTable.slice(0, 3); }
+  get sprintRest()   { return this.sprintTable.slice(3); }
+
+  // The currently displayed historical sprint month
+  get selectedSprint() {
+    if (!this.sprintHistory.length) return null;
+    const match = this.sprintHistory.find(
+      (m) => m.month_key === this.selectedSprintMonth
+    );
+    return match || this.sprintHistory[0];
+  }
+
+  get effectiveSprintMonth() {
+    return this.selectedSprint?.month_key ?? null;
+  }
   get resultsSummary() {
     return this.resultsStats?.summary || defaultResultsStats().summary;
   }
@@ -606,7 +631,10 @@ export default class BookieController extends Controller {
     }));
     const lb = model.leaderboard || {};
     this.leagueTable        = lb.league_table       || [];
-    this.richestGooner      = lb.richest_gooner      || [];
+    this.sprintTable        = (lb.sprint || []).map((row) => decorateSprintRow(row));
+    this.sprintMonthLabel   = lb.sprint_month_label || "";
+    this.sprintHistory      = lb.sprint_history     || [];
+    this.selectedSprintMonth = null;
     this.currentPeriodLabel = lb.current_period_label || "";
     this.periodHistory      = lb.period_history      || [];
     this.selectedPeriodKey  = null; // reset to most-recent on load
@@ -749,6 +777,11 @@ export default class BookieController extends Controller {
   }
 
   @action
+  selectSprintMonth(key) {
+    this.selectedSprintMonth = key;
+  }
+
+  @action
   setTab(tab) {
     this.activeTab = tab;
     if (tab === "admin") {
@@ -875,7 +908,10 @@ export default class BookieController extends Controller {
     try {
       const data = await ajax("/bookie/leaderboard.json");
       this.leagueTable = data.league_table || [];
-      this.richestGooner = data.richest_gooner || [];
+      this.sprintTable = (data.sprint || []).map((row) => decorateSprintRow(row));
+      this.sprintMonthLabel = data.sprint_month_label || "";
+      this.sprintHistory = data.sprint_history || [];
+      this.selectedSprintMonth = null;
       this.currentPeriodLabel = data.current_period_label || "";
       this.periodHistory = data.period_history || [];
       this.selectedPeriodKey = null;
@@ -1313,7 +1349,7 @@ export default class BookieController extends Controller {
       !confirm(
         `End season ${this.seasonKey}?\n\n` +
         `This will:\n` +
-        `• Save the Richest Gooner top 3 as season winners\n` +
+        `• Save the season top 3 by balance as season winners\n` +
         `• Reset all wallet balances to the starting amount\n\n` +
         `This cannot be undone.`
       )
