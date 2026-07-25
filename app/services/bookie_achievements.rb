@@ -175,9 +175,11 @@ class BookieAchievements
       .where(user_id: user_id, rank: 1)
       .where("created_at >= ?", started_at)
       .exists?
+    # Retired badge, so no date gate: the competition can no longer be won and
+    # this reads season snapshots only, meaning the historical Richest Gooner
+    # winners simply keep it regardless of when their season was closed.
     earned["richest_gooner_top3"] = true if BookieSeasonSnapshot
       .where(user_id: user_id, rank: 1..3)
-      .where("created_at >= ?", started_at)
       .exists?
 
     _best_team_name, best_team_profit =
