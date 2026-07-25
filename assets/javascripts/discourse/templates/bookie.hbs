@@ -795,9 +795,7 @@
                 {{#if (eq entry.rank 1)}}1st{{else if (eq entry.rank 2)}}2nd{{else}}3rd{{/if}}
               </span>
               <span class="bookie-podium-name">{{entry.username}}</span>
-              <span class="bookie-podium-value {{entry.profitClass}}">
-                {{entry.profitText}} {{this.currency}}
-              </span>
+              <span class="bookie-podium-value bookie-podium-value--profit {{entry.profitClass}}">{{entry.profitText}} {{this.currency}}</span>
             </div>
           {{/each}}
         </div>
