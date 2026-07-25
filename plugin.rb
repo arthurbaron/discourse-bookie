@@ -28,6 +28,8 @@ after_initialize do
     "app/models/bookie_league_entry",
     "app/models/bookie_period_snapshot",
     "app/models/bookie_season_snapshot",
+    "app/models/bookie_sprint_snapshot",
+    "app/services/bookie_sprint",
     "app/controllers/bookie_page_controller",
     "app/controllers/bookie_controller",
     "app/controllers/admin_bookie_controller",
