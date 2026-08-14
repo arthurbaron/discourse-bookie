@@ -50,7 +50,7 @@ function toRgba(color, alpha) {
     ctx.fillRect(0, 0, 1, 1);
     const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
     return `rgba(${r},${g},${b},${alpha})`;
-  } catch (_e) {
+  } catch {
     return `rgba(0,0,0,${alpha})`;
   }
 }
@@ -300,4 +300,16 @@ export default class BookieResultsChart extends Component {
     this._chart.update();
     this._applyGradient();
   }
+
+  <template>
+    <div class="bookie-chart-outer">
+      {{#if this.hasPoints}}
+        <canvas class="bookie-chart-canvas"></canvas>
+      {{else}}
+        <div class="bookie-chart-empty">
+          No data yet — settle a few events first.
+        </div>
+      {{/if}}
+    </div>
+  </template>
 }

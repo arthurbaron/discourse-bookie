@@ -385,10 +385,9 @@ export default class BookieController extends Controller {
   @tracked walletTransactions = [];
   @tracked walletBalance = 0;
   @tracked notificationsEnabled = true;
-  queryParams = [{ activeTab: "tab" }];
-
   // Accumulator state
-  @tracked betMode = "single"; // "single" | "accumulator"
+  @tracked betMode = "single";
+  // "single" | "accumulator"
   @tracked accaStake = "";
   @tracked accaError = null;
   @tracked accaPlacing = false;
@@ -400,17 +399,22 @@ export default class BookieController extends Controller {
   @tracked leagueTable = [];
   @tracked sprintTable = [];
   @tracked sprintMonthLabel = "";
-  @tracked sprintHistory = []; // [{month_key, label, top3}] newest first
-  @tracked selectedSprintMonth = null; // null = most recent
+  @tracked sprintHistory = [];
+  // [{month_key, label, top3}] newest first
+  @tracked selectedSprintMonth = null;
+  // null = most recent
   @tracked currentPeriodLabel = "";
-  @tracked periodHistory = []; // [{period_key, label, top3}] newest first
-  @tracked selectedPeriodKey = null; // null = auto-select most recent
-
+  @tracked periodHistory = [];
+  // [{period_key, label, top3}] newest first
+  @tracked selectedPeriodKey = null;
   // Admin state
   @tracked adminMatches = [];
+  // null = auto-select most recent
   @tracked adminClubs = [];
   @tracked adminError = null;
   @tracked adminSubTab = "events";
+  queryParams = [{ activeTab: "tab" }];
+
   @tracked seasonKey = null;
   @tracked seasonAlreadyClosed = false;
   @tracked seasonLoading = false;
@@ -452,12 +456,15 @@ export default class BookieController extends Controller {
   get leaguePodium() {
     return this.leagueTable.slice(0, 3);
   }
+
   get leagueRest() {
     return this.leagueTable.slice(3);
   }
+
   get sprintPodium() {
     return this.sprintTable.slice(0, 3);
   }
+
   get sprintRest() {
     return this.sprintTable.slice(3);
   }
@@ -964,7 +971,7 @@ export default class BookieController extends Controller {
         formattedDate: formatDate(tx.date),
         isPositive: tx.amount > 0,
       }));
-    } catch (_e) {
+    } catch {
       // silently fail
     }
   }
@@ -979,7 +986,7 @@ export default class BookieController extends Controller {
         data: { enabled },
       });
       this.notificationsEnabled = result.notifications_enabled !== false;
-    } catch (_e) {
+    } catch {
       this.notificationsEnabled = !enabled;
     }
   }
@@ -997,7 +1004,7 @@ export default class BookieController extends Controller {
       this.currentPeriodLabel = data.current_period_label || "";
       this.periodHistory = data.period_history || [];
       this.selectedPeriodKey = null;
-    } catch (_e) {
+    } catch {
       // silently fail
     }
   }
@@ -1096,7 +1103,7 @@ export default class BookieController extends Controller {
       this.accumulators = (data.accumulators || []).map((a) =>
         decorateAccumulator(a)
       );
-    } catch (_e) {
+    } catch {
       // silently fail
     }
   }
@@ -1129,7 +1136,7 @@ export default class BookieController extends Controller {
         deadlineLocal: formatDateTimeLocal(m.deadline),
       }));
       this.adminClubs = data.clubs || [];
-    } catch (_e) {
+    } catch {
       this.adminError = "Failed to load events.";
     }
   }
@@ -1396,7 +1403,7 @@ export default class BookieController extends Controller {
       this.closableSprintMonth = data.closable_sprint_month || null;
       this.closableSprintLabel = data.closable_sprint_label || null;
       this.closableSprintClosed = Boolean(data.closable_sprint_closed);
-    } catch (_e) {
+    } catch {
       // silently fail
     }
   }
