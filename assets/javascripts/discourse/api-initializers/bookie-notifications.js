@@ -9,7 +9,7 @@ const BOOKIE_MESSAGES = new Set([
   "bookie_achievement_unlocked",
 ]);
 
-export default apiInitializer("1.3.0", (api) => {
+export default apiInitializer((api) => {
   if (!api.registerNotificationTypeRenderer) {
     return;
   }

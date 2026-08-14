@@ -1,7 +1,7 @@
-import { apiInitializer } from "discourse/lib/api";
 import { ajax } from "discourse/lib/ajax";
+import { apiInitializer } from "discourse/lib/api";
 
-export default apiInitializer("0.11.1", (api) => {
+export default apiInitializer((api) => {
   // ── Navigation link ─────────────────────────────────────────────────────────
   // Adds a "Bookie" link to the top navigation bar
   api.addNavigationBarItem({
@@ -16,26 +16,33 @@ export default apiInitializer("0.11.1", (api) => {
   api.decorateCooked(
     (elem) => {
       const el = elem instanceof Element ? elem : elem[0];
-      if (!el) return;
+      if (!el) {
+        return;
+      }
 
       el.querySelectorAll("p, div").forEach((node) => {
-        if (!node.textContent.includes("[bookie-leaderboard]")) return;
-        if (node.innerHTML.includes("blw-widget")) return;
+        if (!node.textContent.includes("[bookie-leaderboard]")) {
+          return;
+        }
+        if (node.innerHTML.includes("blw-widget")) {
+          return;
+        }
 
         const widget = document.createElement("div");
         widget.className = "blw-widget";
-        widget.innerHTML = '<div class="bookie-widget-loading">Loading standings...</div>';
+        widget.innerHTML =
+          '<div class="bookie-widget-loading">Loading standings...</div>';
 
         node.parentNode.insertBefore(widget, node);
         node.remove();
 
         ajax("/bookie/leaderboard.json")
           .then((data) => {
-            const leagueTable  = data.league_table   || [];
-            const sprint       = data.sprint          || [];
-            const currency     = data.currency        || "coins";
-            const periodLabel  = data.current_period_label || "";
-            const sprintLabel  = data.sprint_month_label   || "";
+            const leagueTable = data.league_table || [];
+            const sprint = data.sprint || [];
+            const currency = data.currency || "coins";
+            const periodLabel = data.current_period_label || "";
+            const sprintLabel = data.sprint_month_label || "";
 
             function renderRows(entries, valueKey, unit, signed) {
               if (!entries.length) {
@@ -43,31 +50,47 @@ export default apiInitializer("0.11.1", (api) => {
               }
               const medals = ["🥇", "🥈", "🥉"];
               return `<ol class="blw-list">
-                ${entries.slice(0, 5).map((u, i) => {
-                  const raw = u[valueKey];
-                  const value =
-                    signed && Number(raw) > 0 ? `+${raw}` : `${raw}`;
-                  return `
+                ${entries
+                  .slice(0, 5)
+                  .map((u, i) => {
+                    const raw = u[valueKey];
+                    const value =
+                      signed && Number(raw) > 0 ? `+${raw}` : `${raw}`;
+                    return `
                   <li class="blw-row ${i < 3 ? "blw-top rank-" + (i + 1) : ""}">
                     <span class="blw-rank">${medals[i] || "#" + u.rank}</span>
                     <span class="blw-name">${u.username}</span>
                     <span class="blw-val">${value} ${unit}</span>
                   </li>`;
-                }).join("")}
+                  })
+                  .join("")}
               </ol>`;
             }
 
             function activateTab(w, tab) {
-              w.querySelectorAll(".blw-tab").forEach((t) => t.classList.remove("active"));
-              w.querySelector(`.blw-tab[data-tab="${tab}"]`).classList.add("active");
+              w.querySelectorAll(".blw-tab").forEach((t) =>
+                t.classList.remove("active")
+              );
+              w.querySelector(`.blw-tab[data-tab="${tab}"]`).classList.add(
+                "active"
+              );
               const content = w.querySelector(".blw-content");
               const label = w.querySelector(".blw-period");
               if (tab === "league") {
                 content.innerHTML = renderRows(leagueTable, "points", "pts");
-                if (label) label.textContent = periodLabel;
+                if (label) {
+                  label.textContent = periodLabel;
+                }
               } else {
-                content.innerHTML = renderRows(sprint, "profit", currency, true);
-                if (label) label.textContent = sprintLabel;
+                content.innerHTML = renderRows(
+                  sprint,
+                  "profit",
+                  currency,
+                  true
+                );
+                if (label) {
+                  label.textContent = sprintLabel;
+                }
               }
             }
 
@@ -86,14 +109,17 @@ export default apiInitializer("0.11.1", (api) => {
 
             // Wire up tab clicks
             widget.querySelectorAll(".blw-tab").forEach((btn) => {
-              btn.addEventListener("click", () => activateTab(widget, btn.dataset.tab));
+              btn.addEventListener("click", () =>
+                activateTab(widget, btn.dataset.tab)
+              );
             });
 
             // Show league table by default
             activateTab(widget, "league");
           })
           .catch(() => {
-            widget.innerHTML = '<div class="bookie-widget-empty">Could not load standings.</div>';
+            widget.innerHTML =
+              '<div class="bookie-widget-empty">Could not load standings.</div>';
           });
       });
     },
@@ -105,12 +131,18 @@ export default apiInitializer("0.11.1", (api) => {
   api.decorateCooked(
     (elem) => {
       const el = elem instanceof Element ? elem : elem[0];
-      if (!el) return;
+      if (!el) {
+        return;
+      }
 
       // Find any paragraphs containing "[bookie]"
       el.querySelectorAll("p, div").forEach((node) => {
-        if (!node.textContent.includes("[bookie]")) return;
-        if (node.innerHTML.includes("bookie-widget")) return; // already rendered
+        if (!node.textContent.includes("[bookie]")) {
+          return;
+        }
+        if (node.innerHTML.includes("bookie-widget")) {
+          return;
+        } // already rendered
 
         // Replace [bookie] with a loading widget
         const placeholder = document.createElement("div");

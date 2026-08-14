@@ -16,7 +16,9 @@ function cssVar(name, fallback) {
 // Converts any CSS color string to rgba(r,g,b,alpha).
 // Handles #rrggbb, #rgb, rgb(...), and hsl(...) (via temporary DOM element).
 function toRgba(color, alpha) {
-  if (!color) return `rgba(0,0,0,${alpha})`;
+  if (!color) {
+    return `rgba(0,0,0,${alpha})`;
+  }
 
   // Hex shorthand → full hex
   if (/^#[0-9a-f]{3}$/i.test(color)) {
@@ -106,7 +108,9 @@ export default class BookieResultsChart extends Component {
   }
 
   _buildGradient(ctx, chartArea, accentColor) {
-    if (!chartArea) return toRgba(accentColor, 0.15);
+    if (!chartArea) {
+      return toRgba(accentColor, 0.15);
+    }
     const gradient = ctx.createLinearGradient(
       0,
       chartArea.top,
@@ -175,7 +179,9 @@ export default class BookieResultsChart extends Component {
               title: (items) => items[0]?.label || "",
               label: (item) => {
                 const pt = timeline[item.dataIndex];
-                if (!pt) return "";
+                if (!pt) {
+                  return "";
+                }
                 const delta = Number(pt.delta_points) || 0;
                 const prefix = delta > 0 ? "+" : "";
                 const result = pt.won ? "✓ Correct" : "✗ Wrong";
@@ -216,9 +222,13 @@ export default class BookieResultsChart extends Component {
   }
 
   _applyGradient() {
-    if (!this._chart) return;
+    if (!this._chart) {
+      return;
+    }
     const { ctx, chartArea, data } = this._chart;
-    if (!chartArea) return;
+    if (!chartArea) {
+      return;
+    }
     const colors = this._resolveColors();
     data.datasets[0].backgroundColor = this._buildGradient(
       ctx,
@@ -229,10 +239,14 @@ export default class BookieResultsChart extends Component {
   }
 
   async _initChart() {
-    if (!this.element) return;
+    if (!this.element) {
+      return;
+    }
 
     const canvas = this.element.querySelector("canvas");
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     if (!window.Chart) {
       try {
@@ -244,7 +258,9 @@ export default class BookieResultsChart extends Component {
       }
     }
 
-    if (!this.element) return; // component may have been destroyed while loading
+    if (!this.element) {
+      return;
+    } // component may have been destroyed while loading
 
     this._destroyChart();
 

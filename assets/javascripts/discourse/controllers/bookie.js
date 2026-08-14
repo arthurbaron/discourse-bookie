@@ -1,7 +1,7 @@
-import Controller from "@ember/controller";
 import { tracked } from "@glimmer/tracking";
+import Controller from "@ember/controller";
 import { action } from "@ember/object";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 
 // Wraps each match with reactive (tracked) state for the bet form.
@@ -29,7 +29,9 @@ class MatchState {
   }
 
   get calcPayout() {
-    if (!this.selectedChoice || !this.betAmount) return 0;
+    if (!this.selectedChoice || !this.betAmount) {
+      return 0;
+    }
     const odds = parseFloat(this[`odds_${this.selectedChoice}`]) || 1;
     return Math.round(parseInt(this.betAmount, 10) * odds);
   }
@@ -49,37 +51,57 @@ class MatchState {
   }
 
   get resultText() {
-    if (this.result === "home") return `${this.home_team} won`;
-    if (this.result === "away") return `${this.away_team} won`;
-    if (this.result === "draw") return "Draw";
+    if (this.result === "home") {
+      return `${this.home_team} won`;
+    }
+    if (this.result === "away") {
+      return `${this.away_team} won`;
+    }
+    if (this.result === "draw") {
+      return "Draw";
+    }
     return "";
   }
 
   get userBetLabel() {
-    if (!this._userBet) return "";
+    if (!this._userBet) {
+      return "";
+    }
     const c = this._userBet.choice;
-    if (c === "home") return this.home_team;
-    if (c === "away") return this.away_team;
+    if (c === "home") {
+      return this.home_team;
+    }
+    if (c === "away") {
+      return this.away_team;
+    }
     return "Draw";
   }
 
   get userBetResultClass() {
-    if (!this._userBet) return "";
+    if (!this._userBet) {
+      return "";
+    }
     return `bet-status-${this._userBet.status}`;
   }
 
   get pickStatusClass() {
-    if (!this._userBet) return "";
+    if (!this._userBet) {
+      return "";
+    }
     return this._userBet.status === "won" ? "is-correct" : "is-wrong";
   }
 
   get pickStatusIcon() {
-    if (!this._userBet) return "";
+    if (!this._userBet) {
+      return "";
+    }
     return this._userBet.status === "won" ? "✓" : "✗";
   }
 
   get userBetOddsText() {
-    if (!this._userBet) return "";
+    if (!this._userBet) {
+      return "";
+    }
     return `${Number(this._userBet.odds).toFixed(2)}x`;
   }
 
@@ -96,11 +118,15 @@ class MatchState {
   }
 
   get coinDeltaClass() {
-    return this._userBet?.status === "won" ? "bet-status-won" : "bet-status-lost";
+    return this._userBet?.status === "won"
+      ? "bet-status-won"
+      : "bet-status-lost";
   }
 
   get coinDeltaText() {
-    if (!this._userBet) return "";
+    if (!this._userBet) {
+      return "";
+    }
     if (this._userBet.status === "won") {
       return `+${this._userBet.payout} ${this.currency}`;
     }
@@ -113,7 +139,9 @@ class MatchState {
   }
 
   get pointsDeltaText() {
-    if (!this.hasLeaguePoints) return "";
+    if (!this.hasLeaguePoints) {
+      return "";
+    }
 
     const prefix = this.league_points > 0 ? "+" : "";
     return `${prefix}${this.league_points} pts`;
@@ -130,10 +158,14 @@ function formatDate(iso) {
 }
 
 function formatDateTimeLocal(iso) {
-  if (!iso) return "";
+  if (!iso) {
+    return "";
+  }
 
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
 
   const pad = (value) => String(value).padStart(2, "0");
 
@@ -143,10 +175,14 @@ function formatDateTimeLocal(iso) {
 }
 
 function localDateTimeToIso(value) {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
 
   return date.toISOString();
 }
@@ -197,7 +233,8 @@ function buildChartPoints(timeline) {
   const max = Math.max(...values);
 
   return timeline.map((item, index) => {
-    const x = timeline.length === 1 ? 50 : (index / (timeline.length - 1)) * 100;
+    const x =
+      timeline.length === 1 ? 50 : (index / (timeline.length - 1)) * 100;
     const value = item.cumulative_points || 0;
     const normalized = max === min ? 0.5 : (value - min) / (max - min);
 
@@ -255,11 +292,29 @@ function clubSuggestionsFor(clubs, query) {
 }
 
 const BOOKIE_SPORTS = [
-  { key: "football", label: "Football", icon: "⚽", hasDraw: true, creatable: true },
+  {
+    key: "football",
+    label: "Football",
+    icon: "⚽",
+    hasDraw: true,
+    creatable: true,
+  },
   // Boxing & tennis are kept in the model/UI but disabled for creation for now
   // (football focus). Flip `creatable` to re-enable them in the admin form.
-  { key: "boxing", label: "Boxing", icon: "🥊", hasDraw: false, creatable: false },
-  { key: "tennis", label: "Tennis", icon: "🎾", hasDraw: false, creatable: false },
+  {
+    key: "boxing",
+    label: "Boxing",
+    icon: "🥊",
+    hasDraw: false,
+    creatable: false,
+  },
+  {
+    key: "tennis",
+    label: "Tennis",
+    icon: "🎾",
+    hasDraw: false,
+    creatable: false,
+  },
 ];
 
 const SPORT_PARTICIPANT_LABELS = {
@@ -319,7 +374,6 @@ function decorateAccumulator(acc) {
 
 export default class BookieController extends Controller {
   @service currentUser;
-  queryParams = [{ activeTab: "tab" }];
 
   @tracked activeTab = "matches";
   @tracked matches = [];
@@ -331,8 +385,10 @@ export default class BookieController extends Controller {
   @tracked walletTransactions = [];
   @tracked walletBalance = 0;
   @tracked notificationsEnabled = true;
+  queryParams = [{ activeTab: "tab" }];
+
   // Accumulator state
-  @tracked betMode = "single";        // "single" | "accumulator"
+  @tracked betMode = "single"; // "single" | "accumulator"
   @tracked accaStake = "";
   @tracked accaError = null;
   @tracked accaPlacing = false;
@@ -344,10 +400,10 @@ export default class BookieController extends Controller {
   @tracked leagueTable = [];
   @tracked sprintTable = [];
   @tracked sprintMonthLabel = "";
-  @tracked sprintHistory = [];        // [{month_key, label, top3}] newest first
+  @tracked sprintHistory = []; // [{month_key, label, top3}] newest first
   @tracked selectedSprintMonth = null; // null = most recent
   @tracked currentPeriodLabel = "";
-  @tracked periodHistory = [];       // [{period_key, label, top3}] newest first
+  @tracked periodHistory = []; // [{period_key, label, top3}] newest first
   @tracked selectedPeriodKey = null; // null = auto-select most recent
 
   // Admin state
@@ -393,14 +449,24 @@ export default class BookieController extends Controller {
     Intl.DateTimeFormat().resolvedOptions().timeZone || "your local timezone";
 
   // Computed podium/rest slices (used by template)
-  get leaguePodium() { return this.leagueTable.slice(0, 3); }
-  get leagueRest()   { return this.leagueTable.slice(3); }
-  get sprintPodium() { return this.sprintTable.slice(0, 3); }
-  get sprintRest()   { return this.sprintTable.slice(3); }
+  get leaguePodium() {
+    return this.leagueTable.slice(0, 3);
+  }
+  get leagueRest() {
+    return this.leagueTable.slice(3);
+  }
+  get sprintPodium() {
+    return this.sprintTable.slice(0, 3);
+  }
+  get sprintRest() {
+    return this.sprintTable.slice(3);
+  }
 
   // The currently displayed historical sprint month
   get selectedSprint() {
-    if (!this.sprintHistory.length) return null;
+    if (!this.sprintHistory.length) {
+      return null;
+    }
     const match = this.sprintHistory.find(
       (m) => m.month_key === this.selectedSprintMonth
     );
@@ -410,6 +476,7 @@ export default class BookieController extends Controller {
   get effectiveSprintMonth() {
     return this.selectedSprint?.month_key ?? null;
   }
+
   get resultsSummary() {
     return this.resultsStats?.summary || defaultResultsStats().summary;
   }
@@ -551,7 +618,10 @@ export default class BookieController extends Controller {
       return `0 ${this.currency}`;
     }
 
-    return formatSignedValue(this.resultsSummary.biggest_win, ` ${this.currency}`);
+    return formatSignedValue(
+      this.resultsSummary.biggest_win,
+      ` ${this.currency}`
+    );
   }
 
   get resultsBestTeamText() {
@@ -609,7 +679,9 @@ export default class BookieController extends Controller {
 
   setup(model) {
     const currency = model.currency || "coins";
-    this.matches = (model.matches || []).map((m) => new MatchState({ ...m, currency }));
+    this.matches = (model.matches || []).map(
+      (m) => new MatchState({ ...m, currency })
+    );
     this.settledMatches = (model.settled_matches || []).map(
       (m) => new MatchState({ ...m, currency })
     );
@@ -634,19 +706,21 @@ export default class BookieController extends Controller {
       formattedDate: formatDate(tx.date),
     }));
     const lb = model.leaderboard || {};
-    this.leagueTable        = lb.league_table       || [];
-    this.sprintTable        = (lb.sprint || []).map((row) => decorateSprintRow(row));
-    this.sprintMonthLabel   = lb.sprint_month_label || "";
-    this.sprintHistory      = lb.sprint_history     || [];
+    this.leagueTable = lb.league_table || [];
+    this.sprintTable = (lb.sprint || []).map((row) => decorateSprintRow(row));
+    this.sprintMonthLabel = lb.sprint_month_label || "";
+    this.sprintHistory = lb.sprint_history || [];
     this.selectedSprintMonth = null;
     this.currentPeriodLabel = lb.current_period_label || "";
-    this.periodHistory      = lb.period_history      || [];
-    this.selectedPeriodKey  = null; // reset to most-recent on load
+    this.periodHistory = lb.period_history || [];
+    this.selectedPeriodKey = null; // reset to most-recent on load
   }
 
   // The currently displayed historical period object
   get selectedPeriod() {
-    if (!this.periodHistory.length) return null;
+    if (!this.periodHistory.length) {
+      return null;
+    }
     const match = this.periodHistory.find(
       (p) => p.period_key === this.selectedPeriodKey
     );
@@ -859,7 +933,9 @@ export default class BookieController extends Controller {
 
   @action
   async cancelBet(match) {
-    if (!confirm("Cancel your bet? The amount will be refunded to your wallet.")) {
+    if (
+      !confirm("Cancel your bet? The amount will be refunded to your wallet.")
+    ) {
       return;
     }
 
@@ -912,7 +988,9 @@ export default class BookieController extends Controller {
     try {
       const data = await ajax("/bookie/leaderboard.json");
       this.leagueTable = data.league_table || [];
-      this.sprintTable = (data.sprint || []).map((row) => decorateSprintRow(row));
+      this.sprintTable = (data.sprint || []).map((row) =>
+        decorateSprintRow(row)
+      );
       this.sprintMonthLabel = data.sprint_month_label || "";
       this.sprintHistory = data.sprint_history || [];
       this.selectedSprintMonth = null;
@@ -995,7 +1073,10 @@ export default class BookieController extends Controller {
         type: "POST",
         data: {
           amount: stake,
-          legs: legs.map((leg) => ({ match_id: leg.matchId, choice: leg.choice })),
+          legs: legs.map((leg) => ({
+            match_id: leg.matchId,
+            choice: leg.choice,
+          })),
         },
       });
       this.balance = result.new_balance;
@@ -1030,7 +1111,9 @@ export default class BookieController extends Controller {
       this.balance += acc.amount;
       await this.refreshAccumulators();
     } catch (e) {
-      alert(e.jqXHR?.responseJSON?.error || "Could not cancel the accumulator.");
+      alert(
+        e.jqXHR?.responseJSON?.error || "Could not cancel the accumulator."
+      );
     }
   }
 
@@ -1079,8 +1162,7 @@ export default class BookieController extends Controller {
       return;
     }
 
-    const title =
-      this.nmTitle || `${this.nmHomeTeam} vs ${this.nmAwayTeam}`;
+    const title = this.nmTitle || `${this.nmHomeTeam} vs ${this.nmAwayTeam}`;
 
     try {
       const result = await ajax("/admin/plugins/bookie/matches.json", {
@@ -1227,22 +1309,25 @@ export default class BookieController extends Controller {
     const title = this.emTitle || `${this.emHomeTeam} vs ${this.emAwayTeam}`;
 
     try {
-      const result = await ajax(`/admin/plugins/bookie/matches/${match.id}.json`, {
-        type: "PUT",
-        data: {
-          match: {
-            title,
-            sport: this.emSport,
-            competition: this.emCompetition,
-            home_team: this.emHomeTeam,
-            away_team: this.emAwayTeam,
-            odds_home: this.emOddsHome,
-            odds_draw: this.emHasDraw ? this.emOddsDraw : null,
-            odds_away: this.emOddsAway,
-            deadline,
+      const result = await ajax(
+        `/admin/plugins/bookie/matches/${match.id}.json`,
+        {
+          type: "PUT",
+          data: {
+            match: {
+              title,
+              sport: this.emSport,
+              competition: this.emCompetition,
+              home_team: this.emHomeTeam,
+              away_team: this.emAwayTeam,
+              odds_home: this.emOddsHome,
+              odds_draw: this.emHasDraw ? this.emOddsDraw : null,
+              odds_away: this.emOddsAway,
+              deadline,
+            },
           },
-        },
-      });
+        }
+      );
 
       const updated = {
         ...result.match,
@@ -1269,7 +1354,9 @@ export default class BookieController extends Controller {
       draw: "Draw",
       away: `${match.away_team} wins`,
     };
-    if (!confirm(`Settle event as: ${labels[result]}?`)) return;
+    if (!confirm(`Settle event as: ${labels[result]}?`)) {
+      return;
+    }
 
     try {
       await ajax(`/admin/plugins/bookie/matches/${match.id}/settle.json`, {
@@ -1324,7 +1411,7 @@ export default class BookieController extends Controller {
     if (
       !confirm(
         `Close period ${this.closablePeriodLabel}?\n\n` +
-        `This will snapshot the top 3 for the League Table and mark the period as completed.`
+          `This will snapshot the top 3 for the League Table and mark the period as completed.`
       )
     ) {
       return;
@@ -1360,7 +1447,7 @@ export default class BookieController extends Controller {
     if (
       !confirm(
         `Close sprint ${this.closableSprintLabel}?\n\n` +
-        `This will snapshot the top 3 for the Money Sprint and mark the month as completed.`
+          `This will snapshot the top 3 for the Money Sprint and mark the month as completed.`
       )
     ) {
       return;
@@ -1391,10 +1478,10 @@ export default class BookieController extends Controller {
     if (
       !confirm(
         `End season ${this.seasonKey}?\n\n` +
-        `This will:\n` +
-        `• Save the season top 3 by balance as season winners\n` +
-        `• Reset all wallet balances to the starting amount\n\n` +
-        `This cannot be undone.`
+          `This will:\n` +
+          `• Save the season top 3 by balance as season winners\n` +
+          `• Reset all wallet balances to the starting amount\n\n` +
+          `This cannot be undone.`
       )
     ) {
       return;
