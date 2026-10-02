@@ -42,13 +42,15 @@ class BookieLeagueEntry < ActiveRecord::Base
     period_for(Date.today)
   end
 
+  # The period that ended most recently. Stays the same for the whole current
+  # period, so the admin can close it on any day, not only on the 1st.
   def self.closable_period_key(date = Date.today)
-    current = period_for(date)
-    candidate = period_for(date - 1)
-    return nil unless candidate
-    return nil if candidate == current
+    period = PERIODS.find { |p| p[:months].include?(date.month) }
+    return nil unless period
 
-    candidate
+    first_month = period[:months].first
+    year = (first_month == 12 && date.month == 1) ? date.year - 1 : date.year
+    period_for(Date.new(year, first_month, 1) - 1)
   end
 
   # ── Finders ───────────────────────────────────────────────────────────────
